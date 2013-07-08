@@ -1,0 +1,18 @@
+| >!Run
+|
+| Run file for !PCKeys
+|
+| (C) Stephen Fryatt
+| 6 June 2003
+
+Set PCKeys$Dir <Obey$Dir>
+
+| Queue the Configure Obey file, so that it is run when the module is
+| started.
+
+StartDesktopTask Obey <PCKeys$Dir>.Configure
+
+| Start the module.  When it returns to the Desktop, the above Configure
+| file will be obeyed.
+
+RMRun <PCKeys$Dir>.PCKeys2

@@ -1,0 +1,31 @@
+| >Configure
+|
+| Configuration file for PCKeys 2
+
+| Set the options for the module.  Select one of the following groups of
+| PCKeysConfigure commands, depending on the mode of operation required.
+
+| The following two lines should be used if RISC OS 5 style behaviour is
+| required on RISC OS 5 (comment out if not required):
+
+PCKeysConfigure -adelete &18B -aend &1AD -ahome &1AC
+PCKeysConfigure -nicons
+
+| The following three lines should be used if RISC OS 3, 4 or 6 style
+| behaviour is required on RISC OS 5 (comment out of not required):
+
+| PCKeysConfigure -adelete &08 -aend &7F -ahome &1E
+| PCKeysConfigure -idelete &08 -iend &7F -ihome &AC -ibacksp &08
+| PCKeysConfigure -icons
+
+| The following three lines should be used if RISC OS 5 (PC) style
+| behaviour is required on RISC OS 3, 4 or 6 (comment out of not required):
+
+| PCKeysConfigure -adelete &18B -aend &1AC -ahome &1AD
+| PCKeysConfigure -idelete &8B -iend &AD -ihome &AC -ibacksp &7F
+| PCKeysConfigure -icons
+
+| Select the applications to filter on
+
+PCKeysAddApp Writer
+PCKeysAddApp "Fireworkz 32"

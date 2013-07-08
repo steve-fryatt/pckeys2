@@ -1,0 +1,396 @@
+=============================================================================
+PC Keyboard 2 - PC Keyboard Emulation                            Version 2.10
+
+(C) Stephen Fryatt, 2003                                        5 August 2007
+=============================================================================
+
+
+License
+-------
+
+  PC Keyboard is FREEWARE.  Copyright is held by the author, Stephen Fryatt,
+  2003.
+
+  PC Keyboard may be copied freely, so long as it remains unaltered with all
+  its files and documentation intact.
+
+  If you wish to distribute PC Keyboard, please contact me to get my
+  permission.  This is so that I can ensure that you have the latest version
+  available.  PC Keyboard may not be sold, although Public Domain libraries
+  may charge for the cost of discs.
+
+  No guarantee is made as to the suitability or stability of PC Keyboard for
+  any particular purpose.  No liability can be accepted by the author for any
+  problems or damage caused by the use of PC Keyboard.
+
+
+
+Introduction
+------------
+
+  PC Keyboard is a module to change the use of the Delete, End (Copy) and
+  Home keys in applications under RISC OS.  Historically, the Delete key on
+  RISC OS has always duplicated Backspace, which is different from the
+  behaviour on other platforms.  On RISC OS 5 this behaviour is changed to
+  the "PC style" and the OS tries to enforce this, but not all applications
+  follow suit.
+
+  The module can be used in three ways:
+
+  * It can be used on RISC OS 5 to convert applications fixed in "Acorn
+    style" operation over to the "PC style" used by the OS.
+
+  * Alternatively, on RISC OS 5, it can be used to convert the behaviour of
+    writable icons, and any applications which detect the OS and insist on
+    "PC style" operation, back to "Acorn style" usage.
+
+  * On all other versions of RISC OS, it can be used to convert the behaviour
+    of applications and writable icons to "PC style" operation.
+
+  PC Keyboard 1 worked at a low level in RISC OS, changing the codes returned
+  from the keyboard.  This ensured that the changes took effect in all parts
+  of the OS, but it could also conflict with third-party keyboard extenders.
+
+  With the arrival of RISC OS 5, where the Wimp and bundled applications
+  already use the "PC style" actions by default, PC Keyboard 2 has been
+  written to work on an application by application basis by applying Wimp
+  filters.  This allows it to only work on those applications which need to
+  be modified and, because it can work at a much higher level in the OS, many
+  of the old conflicts have been resolved.
+
+  Where possible, I recommend updating applications to correct their use of
+  Delete instead of adding them to the list in PC Keyboard.  Many RISC OS
+  applications (such as Zap and Pipedream) can have their key bindings
+  changed by editing a file contained in the application; many others have a
+  simple "PC Delete" option in their configuration.  If possible, this is a
+  better solution than filtering them with this module.
+
+
+
+Installation
+------------
+
+  Installing PC Keyboard is a matter of running the !PCKeys application
+  supplied in the archive.  As supplied, this is configured to convert RISC
+  OS 5 applications into "PC style" operation.
+
+  If you wish to run PC Keyboard on startup, you should add it to the 'Run
+  list' in Configure.  To do this, double-click on !Boot, open the 'Boot'
+  option and then open the 'Run' window.  Drag !PCKeys into the scrolling
+  list and click on the two 'Set' buttons.
+
+  The default configuration is designed for use on RISC OS 5, and it adds
+  filters for Writer and FireWorkz.  You should now find that the operation
+  of Delete, End and Home has changed in these two bundled applications.
+
+  If you wish to use PC Keyboard with other applications, or in one of the
+  other modes of operation (converting RISC OS 5 back to "Acorn style" keys,
+  or on another version of RISC OS), it will need to be configured
+  differently.  This is described in the next section.
+
+
+
+Configuration
+-------------
+
+  The behaviour of PC Keyboard can be modified in various ways, either to
+  switch it between the three operating modes outlined above, or to change
+  the list of applications that are being intercepted.
+
+  All the configuration options are set using star-commands; the startup
+  configuration is set in the file !PCKeys.Configure, which should be loaded
+  into a text editor for modification.
+
+  The file is an obey file, which can be configured in a number of ways.
+
+
+  PC-style behaviour on RISC OS 5
+  -------------------------------
+
+  An example of a Configure file for achieving "PC style" keys on RISC OS 5
+  is shown here:
+
+    | >Configure
+    |
+    | Configuration file for PCKeys 2
+
+    | Set the options for the module.
+
+    PCKeysConfigure -adelete &18B -aend &1AC -ahome &1AD
+    PCKeysConfigure -nicons
+
+    | Select the applications to filter on
+
+    PCKeysAddApp Writer
+    PCKeysAddApp "Fireworkz 32"
+    PCKeysAddApp OvationPro
+    PCKeysAddApp Zap
+    PCKeysAddApp "Impression Publisher"
+
+  The lines starting with vertical bars are comments that are ignored.  The
+  lines at the top starting with "PCKeysConfigure" set the functions to be
+  carried out and the new assignments for the three keys.  The keys are set
+  using Wimp key codes; this is described in more detail later.
+
+  The lines starting "PCKeysAddApp" add applications to the list that PC
+  Keyboard will operate on.  New applications can be added on subsequent
+  lines, copying the same format.  The name should be entered as shown in the
+  'Application Tasks' and 'Module Tasks' sections of the Task Manager with
+  respect to spacing and spelling (though the matching is done
+  case-insensitively).
+
+  This may take some trial and error.  For example, FireWorkz uses a hard
+  space (entered by Alt-Space) between "Fireworkz" and "32".  Entering a
+  normal space will not match the application name, but this is not obvious
+  from looking at the Task Manager entry.
+
+  Once you have added your applications, save the file and re-load !PCKeys.
+  To check which applications are being watched for, press Ctrl-F12 and enter
+  "*PCKeysListApps".  This will show a list of all the applications that PC
+  Keyboard knows about, as well as how many copies of them are currently
+  running.
+
+  Applications can also be added from the command line, using the
+  "*PCKeysAddApp" command in the same was as in the Configure file.  Because
+  these are not remembered in the configuration file, they will be forgotten
+  when PC Keyboard is next run.
+
+
+  Acorn-style behaviour on RISC OS 5
+  ----------------------------------
+
+  To replace the "PC style" behaviour of RISC OS 5 with that used on older
+  Acorn machines, the following configuration file should be used instead:
+
+    | >Configure
+    |
+    | Configuration file for PCKeys 2
+
+    | Set the options for the module.
+
+    PCKeysConfigure -adelete &08 -aend &7F -ahome &1E
+    PCKeysConfigure -idelete &08 -iend &7F -ihome &AC -ibacksp &08
+    PCKeysConfigure -icons
+
+    | Select the applications to filter on
+
+    PCKeysAddApp Edit
+
+  A list of applications to filter is added at the end in the same way as
+  before.  In this case, applications should be added if they are hard-coded
+  to use the new RISC OS 5 keypresses and can not be configured out of this
+  behaviour.
+
+
+  PC-style behaviour on RISC OS 3, 4 or 6
+  ---------------------------------------
+
+  Finally, to achieve "PC style" Delete on RISC OS 3, 4 or 6, the following
+  configuration file should be used:
+
+    | >Configure
+    |
+    | Configuration file for PCKeys 2
+
+    | Set the options for the module.
+
+    PCKeysConfigure -adelete &18B -aend &1AC -ahome &1AD
+    PCKeysConfigure -idelete &8B -iend &AD -ihome &AC -ibacksp &7F
+    PCKeysConfigure -icons
+
+    | Select the applications to filter on
+
+    PCKeysAddApp Edit
+
+  A list of applications to filter is added at the end in the same way as
+  before.  This needs to include all applications that take input directly
+  (ie. not using writable icons) and can not be configured to use "PC style"
+  delete directly.
+
+
+
+Star Commands
+-------------
+
+  The following star commands are supported by PC Keyboard.
+
+  *PCKeysAddApp [-task] <task name>
+
+    The command "PCKeysAddApp" is used to add an application to the list of
+    ones to be filtered.  The task name is the one shown in the Task Manager:
+    if a name has a space, enclose it in double-quotes.
+
+    When this command is issued, the application name is remembered and if
+    the task is running a filter is applied immediately.  Once a task is on
+    the list, a filter will be added when it is loaded and removed when it is
+    quit.
+
+    The "-task" tag is optional, and can be used to prefix the task name.
+
+  *PCKeysRemoveApp [-task] <task name>
+
+    The command "PCKeysRemoveApp" removes an application from the list to be
+    filtered.  The task name is the one shown in the list from
+    "*PCKeysListApps" and in the Task Manager.
+
+    When this command is issued, any active filters are removed and the
+    application name is removed from the list stored by PC Keyboard.
+
+  *PCKeysListApps
+
+    "PCKeysListApps" lists the applications currently known to PC Keyboard.
+    The output shows the name of the application, along with the number of
+    filters currently applied.  One filter is applied for each copy of the
+    application running.
+
+  *PCKeysConfigure [options]
+
+    The "PCKeysConfigure" command is used to change the operation of the PC
+    Keyboard module.  It takes a number of parameters which determine which
+    options are to be changed.  If no parameters are supplied, the current
+    status is displayed.
+
+    The first group of parameters defines the key modifications used when
+    filtering applications:
+
+    -adelete <key code>
+
+      The "-adelete <key code>" option sets the key to which the Delete key
+      is mapped for applications.  By default this is &18B, which is End.
+
+    -aend <key code>
+
+      The "-aend <key code>" option sets the key to which the End key is
+      mapped for applications.  By default this is &1AD, which is Ctrl-Right.
+      The alternative "-acopy <key code>" can also be used.
+
+    -ahome <key code>
+
+      The "-ahome <key code>" option sets the key to which the Home key is
+      mapped for applications.  By default this is &1AC, which is Ctrl-Left.
+
+    Where key codes are used, these are the ones returned by the Wimp from
+    "Wimp_Poll".  These are listed in the Programmers' Reference Manuals and
+    the StrongHelp manuals.  Some useful ones are:
+
+    * &18B - Copy
+    * &18C - Left
+    * &18D - Right
+    * &18E - Down
+    * &18F - Up
+
+    In each case, change the central "8" to "9" for a shifted key, "A" for a
+    Ctrl key and "B" for a Ctrl-Shift key.  Page up and Page down are tied in
+    to Up and Down to ensure the correct default behaviour, so it is not
+    possible to access these keys independently.
+
+    The next group of parameters defines the key modifications used when
+    typing into writable icons:
+
+    -idelete <key code>
+
+      The "-idelete <key code>" option sets the key to which the Delete key
+      is mapped in writable icons.  By default this is &8B, which is End.
+
+    -ibacksp <key code>
+
+      The "-ibacksp <key code>" option sets the key to which the Backspace
+      key is mapped in writable icons.  By default this is &7F, which is
+      Delete.
+
+    -iend <key code>
+
+      The "-iend <key code>" option sets the key to which the End key is
+      mapped in writable icons.  By default this is &AD, which is Ctrl-Right.
+      The alternative "-icopy <key code>" can also be used.
+
+    -ihome <key code>
+
+      The "-ihome <key code>" option sets the key to which the Home key is
+      mapped in writable icons.  By default this is &AC, which is Ctrl-Left.
+
+    Where key codes are used, these are the ones inserted into the keyboard
+    buffer by RISC OS.  Some useful ones are:
+
+    * &8B - Copy
+    * &AC - Left
+    * &AD - Right
+
+    Finally, the last two parameters turn the writable icon key modification
+    on or off:
+
+    -icons
+
+      The "-icons" option enables key swapping in writable icons.
+
+    -nicons
+
+      The "-nicons" option disables key swapping in writable icons.
+
+
+
+Known issues
+------------
+
+  There are currently no known issues with PC Keyboard.  If you find a bug,
+  or have any comments, my email address is at the end of the file.
+
+
+
+Version history
+---------------
+
+  The following is a list of all the versions of PC Keyboard.
+
+
+  2.00 (23 May 2003)
+  ------------------
+
+  Public Alpha release.
+
+  * First public release of new module, for use on Iyonix.
+
+
+  2.01 (7 Jun 2003)
+  -----------------
+
+  Public Beta Release.
+
+  * Added "*PCKeysRemoveApp" command.
+  * Added "*PCKeysConfigure" command.
+  * Support for changing End and Home keys added.
+  * Command parameter parsing done via OS_ReadArgs so that it can handle
+    quoted strings and multiple options.
+  * Task and filter tracking improved so that multiple instances of the same
+    application can be supported.
+
+
+  2.09 (9 Jan 2005)
+  -----------------
+
+  Public Alpha release.
+
+  * Added facilities for changing keypresses in writable icons.
+  * Changed "*PCKeysConfigure" arguments to allow for different settings in
+    writable icons.
+
+
+  2.10 (5 Aug 2007)
+  -----------------
+
+  * Improved documentation and initial configuration.
+  * Finally removed 'alpha' tag following two years of no bug reports.
+
+
+
+Updates and Contacting Me
+-------------------------
+
+  If you have any comments about PC Keyboard, or would like to report any
+  bugs that you find, you can email me at the address below.
+
+  Updates to PC Keyboard and more programs for RISC OS computers can be
+  found on my website at http://www.stevefryatt.org.uk/software/
+
+  Stephen Fryatt
+  email: steve@stevefryatt.org.uk
