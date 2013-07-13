@@ -138,7 +138,7 @@ CommandTable
 
 	DCB	"PCKeysConfigure",0
 	ALIGN
-	DCD	command_configure
+	DCD	CommandConfigure
 	DCD	&00FF0000
 	DCD	CommandConfigureSyntax
 	DCD	CommandConfigureHelp
@@ -457,9 +457,9 @@ ListAppsPrintName
 ; Find the number of active filters and print them.
 
 ListAppsCountFilters
-	MOV       R0,#0                                   ; Filter count
+	MOV	R0,#0                                   ; Filter count
 
-	LDR       R5,[R12,#WS_TaskList]
+	LDR	R5,[R12,#WS_TaskList]
 
 ListAppsCountLoop
 	TEQ	R5,#0
@@ -509,7 +509,7 @@ ListAppsExit
 ; ----------------------------------------------------------------------------------------------------------------------
 
 MagicWord
-	DCB	"PCKB"				; The RMA data block identifier.
+	DCB	"PCKB"					; The RMA data block identifier.
 
 DisplayTitles
 	DCB	"Task\t\t\tFilters",13
@@ -523,120 +523,120 @@ DisplayTitles
 ;
 ; Entered with various parameters.
 
-.command_configure
-          STMFD     R13!,{R14}
-          LDR       R12,[R12]
+CommandConfigure
+	STMFD	R13!,{R14}
+	LDR	R12,[R12]
 
 ; Check if there were any parameters; if not, show the current configuration, decode them.
 
-          TEQ       R1,#0
-          BEQ       configure_show
+	TEQ	R1,#0
+	BEQ	configure_show
 
 
 ; Set the parameters.
 
-.configure_set
-          SUB       R13,R13,#128                             ; Claim 128 bytes of workspace from the stack.
+ConfigureSet
+	SUB	R13,R13,#128				; Claim 128 bytes of workspace from the stack.
 
 ; Decode the parameter string.
 
-          MOV       R1,R0
-          ADR       R0,configure_keyword_string
-          MOV       R2,R13
-          MOV       R3,#128
-          SWI       "OS_ReadArgs"
+	MOV	R1,R0
+	ADR	R0,configure_keyword_string
+	MOV	R2,R13
+	MOV	R3,#128
+	SWI	"OS_ReadArgs"
 
 ; Get the numbers one at a time and
 
-          MOV       R4,R2                                   ; Put the command buffer somewhere safe.
+	MOV	R4,R2					; Put the command buffer somewhere safe.
 
-          MOV       R0,#10                                  ; Make up R0 for OS_ReadUnsigned
-          ORR       R0,R0,#(1<<29)
+	MOV	R0,#10					; Make up R0 for OS_ReadUnsigned
+	ORR	R0,R0,#(1<<29)
 
-.configure_decode_delete
-          LDR       R1,[R4,#0]
-          TEQ       R1,#0
-          BEQ       configure_decode_end
+ConfigureDecodeDelete
+	LDR	R1,[R4,#0]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeEnd
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_KeyDelete]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_KeyDelete]
 
-.configure_decode_end
-          LDR       R1,[R4,#4]
-          TEQ       R1,#0
-          BEQ       configure_decode_home
+ConfigureDecodeEnd
+	LDR	R1,[R4,#4]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeHome
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_KeyEnd]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_KeyEnd]
 
-.configure_decode_home
-          LDR       R1,[R4,#8]
-          TEQ       R1,#0
-          BEQ       configure_decode_idelete
+ConfigureDecodeHome
+	LDR	R1,[R4,#8]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeIDelete
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_KeyHome]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_KeyHome]
 
-.configure_decode_idelete
-          LDR       R1,[R4,#12]
-          TEQ       R1,#0
-          BEQ       configure_decode_ibackspace
+ConfigureDecodeIDelete
+	LDR	R1,[R4,#12]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeIBackspace
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_IconDelete]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_IconDelete]
 
-.configure_decode_ibackspace
-          LDR       R1,[R4,#16]
-          TEQ       R1,#0
-          BEQ       configure_decode_iend
+ConfigureDecodeIBackspace
+	LDR	R1,[R4,#16]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeIEnd
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_IconBackspace]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_IconBackspace]
 
-.configure_decode_iend
-          LDR       R1,[R4,#20]
-          TEQ       R1,#0
-          BEQ       configure_decode_ihome
+ConfigureDecodeIEnd
+	LDR	R1,[R4,#20]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeIHome
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_IconEnd]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_IconEnd]
 
-.configure_decode_ihome
-          LDR       R1,[R4,#24]
-          TEQ       R1,#0
-          BEQ       configure_decode_icons
+ConfigureDecodeIHome
+	LDR	R1,[R4,#24]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeIcons
 
-          MOV       R2,#&200
-          SWI       "OS_ReadUnsigned"
-          STR       R2,[R12,#WS_IconHome]
+	MOV	R2,#&200
+	SWI	"OS_ReadUnsigned"
+	STR	R2,[R12,#WS_IconHome]
 
-.configure_decode_icons
-          LDR       R1,[R4,#28]
-          TEQ       R1,#0
-          BEQ       configure_decode_nicons
+ConfigureDecodeIcons
+	LDR	R1,[R4,#28]
+	TEQ	R1,#0
+	BEQ	ConfigureDecodeNIcons
 
-          LDR       R2,[R12,#WS_ModuleFlags]
-          ORR       R2,R2,#FlagDoIcon
-          STR       R2,[R12,#WS_ModuleFlags]
+	LDR	R2,[R12,#WS_ModuleFlags]
+	ORR	R2,R2,#FlagDoIcon
+	STR	R2,[R12,#WS_ModuleFlags]
 
-.configure_decode_nicons
-          LDR       R1,[R4,#32]
-          TEQ       R1,#0
-          BEQ       configure_exit_set
+ConfigureDecodeNIcons
+	LDR	R1,[R4,#32]
+	TEQ	R1,#0
+	BEQ	ConfigureExitSet
 
-          LDR       R2,[R12,#WS_ModuleFlags]
-          BIC       R2,R2,#FlagDoIcon
-          STR       R2,[R12,#WS_ModuleFlags]
+	LDR	R2,[R12,#WS_ModuleFlags]
+	BIC	R2,R2,#FlagDoIcon
+	STR	R2,[R12,#WS_ModuleFlags]
 
-.configure_exit_set
-          ADD       R13,R13,#128
-          LDMFD     R13!,{PC}
+ConfigureExitSet
+	ADD	R13,R13,#128
+	LDMFD	R13!,{PC}
 
 
 .configure_show
