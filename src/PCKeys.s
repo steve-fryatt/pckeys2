@@ -97,10 +97,10 @@ TaskBlock_Size		*	@
 	ENTRY
 
 ModuleHeader
-	DCD	task_code			; Offset to task code
+	DCD	TaskCode			; Offset to task code
 	DCD	InitCode			; Offset to initialisation code
 	DCD	FinalCode			; Offset to finalisation code
-	DCD	service_code			; Offset to service-call handler
+	DCD	ServiceCode			; Offset to service-call handler
 	DCD	TitleString			; Offset to title string
 	DCD	HelpString			; Offset to help string
 	DCD	CommandTable			; Offset to command table
@@ -860,7 +860,7 @@ ConfigureNameHome
 ; Claim InsV to trap keypresses.  Pass workspace pointer in R12 (already in R2).
 
 	MOV	R0,#&14 ; InsV
-	ADR	R1,insv
+	ADR	R1,InsV
 	MOV	R2,R12
 	SWI	"XOS_Claim"
 	BVS	InitExit
@@ -911,92 +911,92 @@ Icon_Home
 ; ----------------------------------------------------------------------------------------------------------------------
 
 FinalCode
-          STMFD     R13!,{R14}
-          LDR       R12,[R12]
+	STMFD	R13!,{R14}
+	LDR	R12,[R12]
 
 FinalKillWimptask
-          LDR       R0,[R12,#WS_TaskHandle]
-          CMP       R0,#0
-          BLE       FinalFreeTasks
+	LDR	R0,[R12,#WS_TaskHandle]
+	CMP	R0,#0
+	BLE	FinalFreeTasks
 
-          LDR       R1,task
-          SWI       "XWimp_CloseDown"
-          MOV       R1,#0
-          STR       R1,[R12,#WS_TaskHandle]
+	LDR	R1,task
+	SWI	"XWimp_CloseDown"
+	MOV	R1,#0
+	STR	R1,[R12,#WS_TaskHandle]
 
 ; Work through the task list, deregistering the filters and freeing the workspace.
 
 FinalFreeTasks
 
-          LDR       R5,[R12,#WS_TaskList]
-          MOV       R0,#7
+	LDR	R5,[R12,#WS_TaskList]
+	MOV	R0,#7
 
 FinalFreeTasksLoop          TEQ       R5,#0
-          BEQ       FinalFreeApps
+	BEQ	FinalFreeApps
 
-          BL        RemoveFilter
+	BL	RemoveFilter
 
-          MOV       R2,R5
-          LDR       R5,[R5,#TaskBlock_Next]
-          SWI       "XOS_Module"
+	MOV	R2,R5
+	LDR	R5,[R5,#TaskBlock_Next]
+	SWI	"XOS_Module"
 
-          B         FinalFreeTasksLoop
+	B	FinalFreeTasksLoop
 
 ; Work through the apps list, freeing the workspace.
 
 FinalFreeApps
 
-          LDR       R6,[R12,#WS_AppList]
-          MOV       R0,#7
+	LDR	R6,[R12,#WS_AppList]
+	MOV	R0,#7
 
 FinalFreeAppsLoop
-          TEQ       R6,#0
-          BEQ       FinalRemoveTicker
+	TEQ	R6,#0
+	BEQ	FinalRemoveTicker
 
-          MOV       R2,R6
-          LDR       R6,[R6,#AppBlock_Next]
-          SWI       "XOS_Module"
+	MOV	R2,R6
+	LDR	R6,[R6,#AppBlock_Next]
+	SWI	"XOS_Module"
 
-          B         FinalFreeAppsLoop
+	B	FinalFreeAppsLoop
 
 ; Remove desktop check code.
 
 FinalRemoveTicker
-          ADR       R0,CheckDesktopState
-          MOV       R1,R12
-          SWI       "XOS_RemoveTickerEvent"
+	ADR	R0,CheckDesktopState
+	MOV	R1,R12
+	SWI	"XOS_RemoveTickerEvent"
 
 ; Turn off keypress events.
 
-          MOV       R0,#13
-          MOV       R1,#11
-          SWI       "XOS_Byte"
+	MOV	R0,#13
+	MOV	R1,#11
+	SWI	"XOS_Byte"
 
 ; Release claim to InsV.
 
-          MOV       R0,#&14 ; InsV
-          ADR       R1,insv
-          MOV       R2,R12
-          SWI       "XOS_Release"
+	MOV	R0,#&14 ; InsV
+	ADR	R1,InsV
+	MOV	R2,R12
+	SWI	"XOS_Release"
 
 ; Release claim to EventV.
 
-          MOV       R0,#&10 ; EventV
-          ADR       R1,EventV
-          MOV       R2,R12
-          SWI       "XOS_Release"
+	MOV	R0,#&10 ; EventV
+	ADR	R1,EventV
+	MOV	R2,R12
+	SWI	"XOS_Release"
 
 ; Free the RMA workspace
 
-.FinalReleaseWorkspace
-          TEQ       R12,#0
-          BEQ       FinalExit
-          MOV       R0,#7
-          MOV       R2,R12
-          SWI       "XOS_Module"
+FinalReleaseWorkspace
+	TEQ	R12,#0
+	BEQ	FinalExit
+	MOV	R0,#7
+	MOV	R2,R12
+	SWI	"XOS_Module"
 
-.FinalExit
-          LDMFD     R13!,{PC}
+FinalExit
+	LDMFD	R13!,{PC}
 
 ; ======================================================================================================================
 
@@ -1036,309 +1036,309 @@ EventV
 
 ; ======================================================================================================================
 
-.insv
+InsV
 
 ; The InsV code is used to fiddle keypresses in writable icons.
 ;
 ; Before doing anything else, check that the buffer is the keyboard buffer and if it is stack some registers and
 ; continue.  If not, just exit.
 
-          TEQ       R1,#0
-          MOVNE     PC,R14
+	TEQ	R1,#0
+	MOVNE	PC,R14
 
-          STMFD     R13!,{R2,R14}
+	STMFD	R13!,{R2,R14}
 
 ; Check that we aresupposed to be fiddling icon keypresses, that we are in a desktop context and that the caret is
 ; in a writable icon at the moment.  If all three are true, carry on to munge the keypress.
 
-          LDR       R2,[R12,#WS_ModuleFlags]
-          AND       R2,R2,#(FlagIcon OR FlagWimp OR FlagDoIcon)
-          TEQ       R2,#(FlagIcon OR FlagWimp OR FlagDoIcon)
-          BNE       insv_exit
+	LDR	R2,[R12,#WS_ModuleFlags]
+	AND	R2,R2,#(FlagIcon OR FlagWimp OR FlagDoIcon)
+	TEQ	R2,#(FlagIcon OR FlagWimp OR FlagDoIcon)
+	BNE	InsVExit
 
 ; Do the keypress substitution.  Test the code aginst Delete, Home, End and Backspace to see if it needs changing.
 
-.insv_test_delete
-          TEQ       R0,#&7F
-          LDREQ     R0,[R12,#WS_IconDelete]
-          BEQ       insv_exit
+InsVTestDelete
+	TEQ	R0,#&7F
+	LDREQ	R0,[R12,#WS_IconDelete]
+	BEQ	InsVExit
 
-.insv_test_home
-          TEQ       R0,#&1E
-          LDREQ     R0,[R12,#WS_IconHome]
-          BEQ       insv_exit
+InsVTestHome
+	TEQ	R0,#&1E
+	LDREQ	R0,[R12,#WS_IconHome]
+	BEQ	InsVExit
 
-.insv_test_end
-          TEQ       R0,#&8B
-          LDREQ     R0,[R12,#WS_IconEnd]
-          BEQ       insv_exit
+InsVTestEnd
+	TEQ	R0,#&8B
+	LDREQ	R0,[R12,#WS_IconEnd]
+	BEQ	InsVExit
 
-.insv_test_backspace
-          TEQ       R0,#8
-          BNE       insv_exit
+InsVTestBackspace
+	TEQ	R0,#8
+	BNE	InsVExit
 
 ; Backspace is a bit different, as ASCII 8 could also be Ctrl-H and we don't want to change that...  Before we do
 ; anything else, then, check the internal code of the last key to be pressed on a key-down event.  If it was
 ; backspace, we can do the substitution.
 
-          LDR       R2,[R12,#WS_LastKey]
-          TEQ       R2,#&1E
-          LDREQ     R0,[R12,#WS_IconBackspace]
+	LDR	R2,[R12,#WS_LastKey]
+	TEQ	R2,#&1E
+	LDREQ	R0,[R12,#WS_IconBackspace]
 
-.insv_exit
-          LDMFD     R13!,{R2,PC}
-
-; ======================================================================================================================
-
-.service_code
-          TEQ       R1,#&27
-          TEQNE     R1,#&49
-          TEQNE     R1,#&4A
-
-          MOVNE     PC,R14
-
-          STMFD     R13!,{R14}
-          LDR       R12,[R12]
-
-.service_reset
-          TEQ       R1,#&27
-          BNE       service_start_wimp
-
-          MOV       R14,#0
-          STR       R14,[R12,#WS_TaskHandle]
-          LDMFD     R13!,{PC}
-
-.service_start_wimp
-          TEQ       R1,#46
-          BNE       service_started_wimp
-
-          LDR       R14,[R12,#WS_TaskHandle]
-          TEQ       R14,#0
-          MOVEQ     R14,#NOT-1
-          STREQ     R14,[R12,#WS_TaskHandle]
-          ADREQL    R0,CommandDesktop
-          MOVEQ     R1,#0
-          LDMFD     R13!,{PC}
-
-.service_started_wimp
-          LDR       R14,[R12,#WS_TaskHandle]
-          CMN       R14,#1
-          MOVEQ     R14,#0
-          STREQ     R14,[R12,#WS_TaskHandle]
-          LDMFD     R13!,{PC}
+.InsVExit
+	LDMFD	R13!,{R2,PC}
 
 ; ======================================================================================================================
 
-.filter_code
-          STMFD     R13!, {R0-R5,R14}
+ServiceCode
+	TEQ	R1,#&27
+	TEQNE	R1,#&49
+	TEQNE	R1,#&4A
+
+	MOVNE	PC,R14
+
+	STMFD	R13!,{R14}
+	LDR	R12,[R12]
+
+ServiceReset
+	TEQ	R1,#&27
+	BNE	ServiceStartWimp
+
+	MOV	R14,#0
+	STR	R14,[R12,#WS_TaskHandle]
+	LDMFD	R13!,{PC}
+
+ServiceStartWimp
+	TEQ	R1,#46
+	BNE	ServiceStartedWimp
+
+	LDR	R14,[R12,#WS_TaskHandle]
+	TEQ	R14,#0
+	MOVEQ	R14,#NOT-1
+	STREQ	R14,[R12,#WS_TaskHandle]
+	ADREQL	R0,CommandDesktop
+	MOVEQ	R1,#0
+	LDMFD	R13!,{PC}
+
+ServiceStartedWimp
+	LDR	R14,[R12,#WS_TaskHandle]
+	CMN	R14,#1
+	MOVEQ	R14,#0
+	STREQ	R14,[R12,#WS_TaskHandle]
+	LDMFD	R13!,{PC}
+
+; ======================================================================================================================
+
+FilterCode
+	STMFD	R13!, {R0-R5,R14}
 
 ; Get the key-code from the poll block, then test it against Delete, End and Home keys to see if it needs changing.
 
-          LDR       R0,[R1,#24]
+	LDR	R0,[R1,#24]
 
-.filter_test_delete
-          TEQ       R0,#&7F
-          BNE       filter_test_end
+FilterTestDelete
+	TEQ	R0,#&7F
+	BNE	FilterTestEnd
 
-          LDR       R0,[R12,#WS_KeyDelete]
-          STR       R0,[R1,#24]
+	LDR	R0,[R12,#WS_KeyDelete]
+	STR	R0,[R1,#24]
 
-          B         filter_exit
+	B	FilterExit
 
-.filter_test_end
-          MOV       R2,#&08B
-          ORR       R2,R2,#&100
-          TEQ       R0,R2
-          BNE       filter_test_home
+FilterTestEnd
+	MOV	R2,#&08B
+	ORR	R2,R2,#&100
+	TEQ	R0,R2
+	BNE	FilterTestHome
 
-          LDR       R0,[R12,#WS_KeyEnd]
-          STR       R0,[R1,#24]
+	LDR	R0,[R12,#WS_KeyEnd]
+	STR	R0,[R1,#24]
 
-          B         filter_exit
+	B	FilterExit
 
-.filter_test_home
-          TEQ       R0,#&1E
-          BNE       filter_exit
+FilterTestHome
+	TEQ	R0,#&1E
+	BNE	FilterExit
 
-          LDR       R0,[R12,#WS_KeyHome]
-          STR       R0,[R1,#24]
+	LDR	R0,[R12,#WS_KeyHome]
+	STR	R0,[R1,#24]
 
-.filter_exit
-          LDMFD     R13!,{R0-R5,R14}
-          TEQ       PC,PC
-          MOVNES    PC,R14
-          MSR       CPSR_f,#0
-          MOV       PC,R14
-
-; ======================================================================================================================
-
-.task
-          EQUS      "TASK"
-
-.wimp_version
-          EQUD      310
-
-.wimp_messages
-.wimp_message_taskinit
-          EQUD      &400C2    ; Message_TaskInitialise
-.wimp_message_taskclosedown
-          EQUD      &400C3    ; Message_TaskCloseDown
-.wimp_message_quit
-          EQUD      0         ; Message_Quit
-
-.poll_mask
-          EQUD      &3830
-
-.task_name
-          EQUZ      "PC Keyboard"
-
-.misused_start_command
-          EQUD      0
-          EQUZ      "Use *Desktop to start PCKeys."
-          ALIGN
+FilterExit
+	LDMFD	R13!,{R0-R5,R14}
+	TEQ	PC,PC
+	MOVNES	PC,R14
+	MSR	CPSR_f,#0
+	MOV	PC,R14
 
 ; ======================================================================================================================
 
-.task_code
-          LDR       R12,[R12]
-          ADRW      R13,WS_Size+4         ; Set the stack up.
+Task
+	DCB	TASK"
+
+WimpVersion
+	DCD	310
+
+WimpMessages
+WimpMessageTaskInit
+	DCD	&400C2		; Message_TaskInitialise
+WimpMessageTaskCloseDown
+	DCD	&400C3		; Message_TaskCloseDown
+WimpMessageQuit
+	DCD	0		; Message_Quit
+
+PollMask
+	DCD	&3830
+
+TaskName
+	DCB	"PC Keyboard",0
+
+MisusedStartCommand
+	DCD	0
+	DCB	"Use *Desktop to start PCKeys.",0
+	ALIGN
+
+; ======================================================================================================================
+
+TaskCode
+	LDR	R12,[R12]
+	ADD	R13,R12,WS_Size+4			; Set the stack up.
 
 ; Check that we aren't in the desktop.
 
-          SWI       "XWimp_ReadSysInfo"
-          TEQ       R0,#0
-          ADREQ     R0,misused_start_command
-          SWIEQ     "OS_GenerateError"
+	SWI	"XWimp_ReadSysInfo"
+	TEQ	R0,#0
+	ADREQ	R0,MisusedStartCommand
+	SWIEQ	"OS_GenerateError"
 
 ; Kill any previous version of our task which may be running.
 
-          LDR       R0,[R12,#WS_TaskHandle]
-          TEQ       R0,#0
-          LDRGT     R1,task
-          SWIGT     "XWimp_CloseDown"
-          MOV       R0,#0
-          STRGT     R0,[R12,#WS_TaskHandle]
+	LDR	R0,[R12,#WS_TaskHandle]
+	TEQ	R0,#0
+	LDRGT	R1,Task
+	SWIGT	"XWimp_CloseDown"
+	MOV	R0,#0
+	STRGT	R0,[R12,#WS_TaskHandle]
 
 ; Set the Quit flag to zero
 
-          STR       R0,[R12,#WS_Quit]
+	STR	R0,[R12,#WS_Quit]
 
 ; (Re) initialise the module as a Wimp task.
 
-          LDR       R0,wimp_version
-          LDR       R1,task
-          ADR       R2,task_name
-          ADR       R3,wimp_messages
-          SWI       "XWimp_Initialise"
-          SWIVS     "OS_Exit"
-          STR       R1,[R12,#WS_TaskHandle]
+	LDR	R0,WimpVersion
+	LDR	R1,Task
+	ADR	R2,TaskName
+	ADR	R3,WimpMessages
+	SWI	"XWimp_Initialise"
+	SWIVS	"OS_Exit"
+	STR	R1,[R12,#WS_TaskHandle]
 
 ; Set R1 up to be the block pointer.
 
-          ADRW      R1,WS_Block
+	ADD	R1,R12,WS_Block
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.poll_loop
-          LDR       R0,poll_mask
-          SWI       "Wimp_Poll"
+PollLoop
+	LDR	R0,PollMask
+	SWI	"Wimp_Poll"
 
 ; Check for and deal with Null polls.
 
-.poll_event_null
-          TEQ       R0,#0
-          BNE       poll_event_wimp_message
+PollLoopEventNull
+	TEQ	R0,#0
+	BNE	PollLoopEventWimpMessage
 
-          BL        check_caret_location
-          B         poll_loop_end
+	BL	CheckCaretLocation
+	B	PollLoopEnd
 
 ; Check for and deal with user messages.
 
-.poll_event_wimp_message
-          TEQ       R0,#17
-          TEQNE     R0,#18
-          BNE       poll_loop_end
+PollLoopEventWimpMessage
+	TEQ	R0,#17
+	TEQNE	R0,#18
+	BNE	PollLoopEnd
 
-          LDR       R0,[R1,#16]
+	LDR	R0,[R1,#16]
 
 ; Message_Quit
 
-.poll_loop_message_quit
-          TEQ       R0,#0
-          BNE       poll_loop_message_taskinit
-          MOV       R0,#1
-          STR       R0,[R12,#WS_Quit]
-          B         poll_loop_end
+PollLoopMessageQuit
+	TEQ	R0,#0
+	BNE	PollLoopMessageTaskInit
+	MOV	R0,#1
+	STR	R0,[R12,#WS_Quit]
+	B	PollLoopEnd
 
 ; Message_TaskInit
 
-.poll_loop_message_taskinit
-          LDR       R2,wimp_message_taskinit
-          TEQ       R0,R2
-          BNE       poll_loop_message_taskclosedown
+PollLoopMessageTaskInit
+	LDR	R2,WimpMessageTaskInit
+	TEQ	R0,R2
+	BNE	PollLoopMessageTaskInit
 
-          ADD       R0,R1,#28
-          BL        FindAppBlock
+	ADD	R0,R1,#28
+	BL	FindAppBlock
 
-          TEQ       R6,#0
-          BEQ       poll_loop_end
+	TEQ	R6,#0
+	BEQ	PollLoopEnd
 
-          LDR       R0,[R1,#4]
-          BL        AddFilter
+	LDR	R0,[R1,#4]
+	BL	AddFilter
 
-          B         poll_loop_end
+	B	PollLoopEnd
 
 ; Message_TaskCloseDown
 
-.poll_loop_message_taskclosedown
-          LDR       R2,wimp_message_taskclosedown
-          TEQ       R0,R2
-          BNE       poll_loop_end
+PollLoopMessageTaskInit
+	LDR	R2,WimpMessageTaskCloseDown
+	TEQ	R0,R2
+	BNE	PollLoopEnd
 
-          LDR       R0,[R1,#4]
-          BL        FindTaskBlock
+	LDR	R0,[R1,#4]
+	BL	FindTaskBlock
 
-          TEQ       R5,#0
-          BLNE      RemoveFilter
+	TEQ	R5,#0
+	BLNE	RemoveFilter
 
-.poll_loop_end
-          LDR       R0,[R12,#WS_Quit]
-          TEQ       R0,#0
-          BEQ       poll_loop
+PollLoopEnd
+	LDR	R0,[R12,#WS_Quit]
+	TEQ	R0,#0
+	BEQ	PollLoop
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.close_down
-          LDR       R0,[R12,#WS_TaskHandle]
-          LDR       R1,task
-          SWI       "XWimp_CloseDown"
+CloseDown
+	LDR	R0,[R12,#WS_TaskHandle]
+	LDR	R1,Task
+	SWI	"XWimp_CloseDown"
 
 ; Set the task handle to zero and die.
 
-          MOV       R0,#0
-          STR       R0,[R12,#WS_TaskHandle]
+	MOV	R0,#0
+	STR	R0,[R12,#WS_TaskHandle]
 
-          SWI       "OS_Exit"
+	SWI	"OS_Exit"
 
 ; ======================================================================================================================
 
-.check_caret_location
+.CheckCaretLocation
 
 ; Check the position of the caret.  This is called on Null polls, and is used to set the icon flag if the caret is
 ; currently in a Wimp icon as opposed to being 'task controlled'.
 
-          STMFD     R13!,{R0,R2,R14}
+	STMFD	R13!,{R0,R2,R14}
 
-          SWI       "Wimp_GetCaretPosition"
-          LDR       R2,[R1,#4]
-          CMP       R2,#-1
+	SWI	"Wimp_GetCaretPosition"
+	LDR	R2,[R1,#4]
+	CMP	R2,#-1
 
-          LDR       R0,[R12,#WS_ModuleFlags]
-          BICEQ     R0,R0,#FlagIcon
-          ORRNE     R0,R0,#FlagIcon
-          STR       R0,[R12,#WS_ModuleFlags]
+	LDR	R0,[R12,#WS_ModuleFlags]
+	BICEQ	R0,R0,#FlagIcon
+	ORRNE	R0,R0,#FlagIcon
+	STR	R0,[R12,#WS_ModuleFlags]
 
-          LDMFD     R13!,{R0,R2,PC}
+	LDMFD	R13!,{R0,R2,PC}
 
 ; ======================================================================================================================
 
@@ -1433,7 +1433,7 @@ AddFilter
 AddFilterRegister
 	MOV	R3,R0
 	ADRL	R0,TitleString
-	ADR	R1,filter_code
+	ADR	R1,FilterCode
 	MOV	R2,R12
 	LDR	R4,FilterPollMask
 	SWI	"XFilter_RegisterPostFilter"
@@ -1487,7 +1487,7 @@ RemoveFilterTest
 
 RemoveFilterDeregister
 	ADRL	R0,TitleString
-	ADR	R1,filter_code
+	ADR	R1,FilterCode
 	MOV	R2,R12
 	LDR	R4,FilterPollMask
 	SWI	"XFilter_DeRegisterPostFilter"
