@@ -1,10 +1,31 @@
-REM >PCKeys2Src
-REM
-REM PCKeys Module
-REM (c) Stephen Fryatt, 2003
-REM
-REM Needs ExtBasAsm to assemble.
-REM 26/32 bit neutral
+; Copyright 2003-2013, Stephen Fryatt (info@stevefryatt.org.uk)
+;
+; This file is part of PCKeys 2:
+;
+;   http://www.stevefryatt.org.uk/software/
+;
+; Licensed under the EUPL, Version 1.1 only (the "Licence");
+; You may not use this work except in compliance with the
+; Licence.
+;
+; You may obtain a copy of the Licence at:
+;
+;   http://joinup.ec.europa.eu/software/page/eupl
+;
+; Unless required by applicable law or agreed to in
+; writing, software distributed under the Licence is
+; distributed on an "AS IS" basis, WITHOUT WARRANTIES
+; OR CONDITIONS OF ANY KIND, either express or implied.
+;
+; See the Licence for the specific language governing
+; permissions and limitations under the Licence.
+
+; PCKeys.s
+;
+; PCKeys 2 Module Source
+;
+; REM 26/32 bit neutral
+
 
 
 XOS_Module				EQU	&02001E
@@ -77,8 +98,8 @@ TaskBlock_Size		*	@
 
 ModuleHeader
 	DCD	task_code			; Offset to task code
-	DCD	init_code			; Offset to initialisation code
-	DCD	final_code			; Offset to finalisation code
+	DCD	InitCode			; Offset to initialisation code
+	DCD	FinalCode			; Offset to finalisation code
 	DCD	service_code			; Offset to service-call handler
 	DCD	TitleString			; Offset to title string
 	DCD	HelpString			; Offset to help string
@@ -530,7 +551,7 @@ CommandConfigure
 ; Check if there were any parameters; if not, show the current configuration, decode them.
 
 	TEQ	R1,#0
-	BEQ	configure_show
+	BEQ	ConfigureShow
 
 
 ; Set the parameters.
@@ -541,7 +562,7 @@ ConfigureSet
 ; Decode the parameter string.
 
 	MOV	R1,R0
-	ADR	R0,configure_keyword_string
+	ADR	R0,ConfigureKeywordString
 	MOV	R2,R13
 	MOV	R3,#128
 	SWI	"OS_ReadArgs"
@@ -639,271 +660,264 @@ ConfigureExitSet
 	LDMFD	R13!,{PC}
 
 
-.configure_show
+ConfigureShow
 
 ; Display the details for the task filter keys.
 
-          ADRL      R0,configure_sect_tasks
-          SWI       "OS_PrettyPrint"
-          SWI       "OS_NewLine"
+	ADRL	R0,ConfigureSectionTasks
+	SWI	"OS_PrettyPrint"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_titles
-          SWI       "OS_PrettyPrint"
-          SWI       "OS_NewLine"
+	ADRL	R0,ConfigureTitles
+	SWI	"OS_PrettyPrint"
+	SWI	"OS_NewLine"
 
 ; Output the details for the individual keys.
 
-          ADRL      R0,configure_name_delete
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameDelete
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_KeyDelete]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_KeyDelete]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_name_end
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameEnd
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_KeyEnd]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_KeyEnd]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_name_home
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameHome
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_KeyHome]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_KeyHome]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
 ; Output a new line for tidyness.
 
-          SWI       "OS_NewLine"
+	SWI	"OS_NewLine"
 
 ; Test to see if we are fiddling icon keys, and exit now if we are not.  Otherwise, show the icon keys.
 
-          LDR       R0,[R12,#WS_ModuleFlags]
-          TST       R0,#FlagDoIcon
-          BEQ       configure_exit_show
+	LDR	R0,[R12,#WS_ModuleFlags]
+	TST	R0,#FlagDoIcon
+	BEQ	ConfigureExitShow
 
 ; Display the details for the writable icon keys.
 
-          ADRL      R0,configure_sect_icons
-          SWI       "OS_PrettyPrint"
-          SWI       "OS_NewLine"
+	ADRL	R0,ConfigureSectionIcons
+	SWI	"OS_PrettyPrint"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_titles
-          SWI       "OS_PrettyPrint"
-          SWI       "OS_NewLine"
+	ADRL	R0,ConfigureTitles
+	SWI	"OS_PrettyPrint"
+	SWI	"OS_NewLine"
 
 ; Output the details for the individual keys.
 
-          ADRL      R0,configure_name_delete
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameDelete
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_IconDelete]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_IconDelete]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_name_backspace
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameBackspace
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_IconBackspace]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_IconBackspace]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_name_end
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameEnd
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_IconEnd]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_IconEnd]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
-          ADRL      R0,configure_name_home
-          MOV       R1,#8
-          BL        PrintPaddedString
+	ADRL	R0,ConfigureNameHome
+	MOV	R1,#8
+	BL	PrintPaddedString
 
-          LDR       R0,[R12,#WS_IconHome]
-          ADRW      R1,WS_Block
-          MOV       R2,#WS_BlockSize
-          SWI       "OS_ConvertHex4"
-          SWI       "OS_Write0"
-          SWI       "OS_NewLine"
+	LDR	R0,[R12,#WS_IconHome]
+	ADD	R1,R12,WS_Block
+	MOV	R2,#WS_BlockSize
+	SWI	"OS_ConvertHex4"
+	SWI	"OS_Write0"
+	SWI	"OS_NewLine"
 
 ; Output a new line for tidyness.
 
-          SWI       "OS_NewLine"
+	SWI	"OS_NewLine"
 
-.configure_exit_show
-          LDMFD     R13!,{PC}
+ConfigureExitShow
+	LDMFD	R13!,{PC}
 
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.configure_keyword_string
-          EQUZ      "adelete/K,aend=acopy/K,ahome/K,idelete/K,ibacksp/K,iend=icopy/K,ihome/K,icons/S,nicons/S"
+ConfigureKeywordString
+	DCB      "adelete/K,aend=acopy/K,ahome/K,idelete/K,ibacksp/K,iend=icopy/K,ihome/K,icons/S,nicons/S",0
 
-.configure_sect_tasks
-          EQUZ      "Task filters:"
+ConfigureSectionTasks
+	DCB	"Task filters:",0
 
-.configure_sect_icons
-          EQUZ      "Writable icons:"
+ConfigureSectionIcons
+	DCB	"Writable icons:",0
 
-.configure_titles
-          EQUS      "Key"
-          EQUB      9
-          EQUS      "Code"
+ConfigureTitles
+	DCB	"Key\tCode",13
+	DCB	"---\t----",0
 
-          EQUB      13
+ConfigureNameDelete
+	DCB	"Delete",0
 
-          EQUS      "---"
-          EQUB      9
-          EQUZ      "----"
+ConfigureNameBackspace
+	DCB	"BackSp",0
 
-.configure_name_delete
-          EQUZ      "Delete"
+ConfigureNameEnd
+	DCB	"End",0
 
-.configure_name_backspace
-          EQUZ      "BackSp"
-
-.configure_name_end
-          EQUZ      "End"
-
-.configure_name_home
-          EQUZ      "Home"
-          ALIGN
+ConfigureNameHome
+	DCB	"Home",0
+	ALIGN
 
 ; ======================================================================================================================
 
-.init_code
-          STMFD     R13!,{R14}
+.InitCode
+	STMFD     R13!,{R14}
 
 ; Claim our workspace and store the pointer.
 
-          MOV       R0,#6
-          MOV       R3,#WS_Size
-          SWI       "XOS_Module"
-          BVS       init_exit
-          STR       R2,[R12]
-          MOV       R12,R2
+	MOV	R0,#6
+	MOV	R3,#WS_Size
+	SWI	"XOS_Module"
+	BVS	InitExit
+	STR	R2,[R12]
+	MOV	R12,R2
 
 ; Initialise the workspace that was just claimed.
 
-          MOV       R0,#0 ; Was %11 ??
-          STR       R0,[R12,#WS_ModuleFlags]
+	MOV	R0,#0 ; Was %11 ??
+	STR	R0,[R12,#WS_ModuleFlags]
 
-          MOV       R0,#0
-          STR       R0,[R12,#WS_LastKey]
-          STR       R0,[R12,#WS_TaskHandle]
-          STR       R0,[R12,#WS_AppList]
-          STR       R0,[R12,#WS_TaskList]
+	MOV	R0,#0
+	STR	R0,[R12,#WS_LastKey]
+	STR	R0,[R12,#WS_TaskHandle]
+	STR	R0,[R12,#WS_AppList]
+	STR	R0,[R12,#WS_TaskList]
 
-          LDR       R0,key_delete
-          STR       R0,[R12,#WS_KeyDelete]
-          LDR       R0,key_end
-          STR       R0,[R12,#WS_KeyEnd]
-          LDR       R0,key_home
-          STR       R0,[R12,#WS_KeyHome]
+	LDR	R0,Key_Delete
+	STR	R0,[R12,#WS_KeyDelete]
+	LDR	R0,Key_End
+	STR	R0,[R12,#WS_KeyEnd]
+	LDR	R0,Key_Home
+	STR	R0,[R12,#WS_KeyHome]
 
-          LDR       R0,icon_delete
-          STR       R0,[R12,#WS_IconDelete]
-          LDR       R0,icon_backspace
-          STR       R0,[R12,#WS_IconBackspace]
-          LDR       R0,icon_end
-          STR       R0,[R12,#WS_IconEnd]
-          LDR       R0,icon_home
-          STR       R0,[R12,#WS_IconHome]
+	LDR	R0,Icon_Delete
+	STR	R0,[R12,#WS_IconDelete]
+	LDR	R0,Icon_Backspace
+	STR	R0,[R12,#WS_IconBackspace]
+	LDR	R0,Icon_End
+	STR	R0,[R12,#WS_IconEnd]
+	LDR	R0,Icon_Home
+	STR	R0,[R12,#WS_IconHome]
 
 ; Install code to check desktop state every second  Pass workspace pointer in R12 (already in R2).
 
-          MOV       R0,#99
-          ADR       R1,check_desktop_state
-          SWI       "XOS_CallEvery"
-          BVS       init_exit
+	MOV	R0,#99
+	ADR	R1,CheckDesktopState
+	SWI	"XOS_CallEvery"
+	BVS	InitExit
 
 ; Claim InsV to trap keypresses.  Pass workspace pointer in R12 (already in R2).
 
-          MOV       R0,#&14 ; InsV
-          ADR       R1,insv
-          MOV       R2,R12
-          SWI       "XOS_Claim"
-          BVS       init_exit
+	MOV	R0,#&14 ; InsV
+	ADR	R1,insv
+	MOV	R2,R12
+	SWI	"XOS_Claim"
+	BVS	InitExit
 
 ; Claim EventV to trap keydown.  Pass workspace pointer in R12 (already in R2).
 
-          MOV       R0,#&10 ; EventV
-          ADR       R1,eventv
-          SWI       "XOS_Claim"
-          BVS       init_exit
+	MOV	R0,#&10 ; EventV
+	ADR	R1,EventV
+	SWI	"XOS_Claim"
+	BVS	InitExit
 
 ; Switch on Keypress events.
 
-          MOV       R0,#14
-          MOV       R1,#11
-          SWI       "XOS_Byte"
+	MOV	R0,#14
+	MOV	R1,#11
+	SWI	"XOS_Byte"
 
-.init_exit
-          LDMFD     R13!,{PC}
+InitExit
+	LDMFD	R13!,{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
 ; Keys used in application filters
 
-.key_delete
-          EQUD      &18B
+KeyDelete
+	DCD	&18B
 
-.key_end
-          EQUD      &1AD
+Key_End
+	DCD	&1AD
 
-.key_home
-          EQUD      &1AC
+Key_Home
+	DCD	&1AC
 
 ; Keys used in writable icons
 
-.icon_delete
-          EQUD      &8B
+Icon_Delete
+	DCD	&8B
 
-.icon_backspace
-          EQUD      &7F
+Icon_Backspace
+	DCD	&7F
 
-.icon_end
-          EQUD      &AD
+Icon_End
+	DCD	&AD
 
-.icon_home
-          EQUD      &AC
+Icon_Home
+	DCD	&AC
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
-.final_code
+FinalCode
           STMFD     R13!,{R14}
           LDR       R12,[R12]
 
-.final_kill_wimptask
+FinalKillWimptask
           LDR       R0,[R12,#WS_TaskHandle]
           CMP       R0,#0
-          BLE       final_freetasks
+          BLE       FinalFreeTasks
 
           LDR       R1,task
           SWI       "XWimp_CloseDown"
@@ -912,14 +926,13 @@ ConfigureExitSet
 
 ; Work through the task list, deregistering the filters and freeing the workspace.
 
-.final_freetasks
+FinalFreeTasks
 
           LDR       R5,[R12,#WS_TaskList]
           MOV       R0,#7
 
-.final_freetasks_loop
-          TEQ       R5,#0
-          BEQ       final_freeapps
+FinalFreeTasksLoop          TEQ       R5,#0
+          BEQ       FinalFreeApps
 
           BL        RemoveFilter
 
@@ -927,29 +940,29 @@ ConfigureExitSet
           LDR       R5,[R5,#TaskBlock_Next]
           SWI       "XOS_Module"
 
-          B         final_freetasks_loop
+          B         FinalFreeTasksLoop
 
 ; Work through the apps list, freeing the workspace.
 
-.final_freeapps
+FinalFreeApps
 
           LDR       R6,[R12,#WS_AppList]
           MOV       R0,#7
 
-.final_freeapps_loop
+FinalFreeAppsLoop
           TEQ       R6,#0
-          BEQ       final_remove_ticker
+          BEQ       FinalRemoveTicker
 
           MOV       R2,R6
           LDR       R6,[R6,#AppBlock_Next]
           SWI       "XOS_Module"
 
-          B         final_freeapps_loop
+          B         FinalFreeAppsLoop
 
 ; Remove desktop check code.
 
-.final_remove_ticker
-          ADR       R0,check_desktop_state
+FinalRemoveTicker
+          ADR       R0,CheckDesktopState
           MOV       R1,R12
           SWI       "XOS_RemoveTickerEvent"
 
@@ -969,57 +982,57 @@ ConfigureExitSet
 ; Release claim to EventV.
 
           MOV       R0,#&10 ; EventV
-          ADR       R1,eventv
+          ADR       R1,EventV
           MOV       R2,R12
           SWI       "XOS_Release"
 
 ; Free the RMA workspace
 
-.final_release_workspace
+.FinalReleaseWorkspace
           TEQ       R12,#0
-          BEQ       final_exit
+          BEQ       FinalExit
           MOV       R0,#7
           MOV       R2,R12
           SWI       "XOS_Module"
 
-.final_exit
+.FinalExit
           LDMFD     R13!,{PC}
 
 ; ======================================================================================================================
 
-.check_desktop_state
+CheckDesktopState
 
 ; Check the state of the desktop and set the status flag appropriately.
 ;
 ; This code probably shouldn't be called under interrupt, but it worked OK in PCKeys1 (apparently) without problem
 ; and there isn't an obvious way to do it otherwise...
 
-          STMFD     R13!,{R0-R12,R14}
+	STMFD	R13!,{R0-R12,R14}
 
-          MOV       R0,#3
-          SWI       "Wimp_ReadSysInfo"
+	MOV	R0,#3
+	SWI	"Wimp_ReadSysInfo"
 
-          LDR       R1,[R12,#WS_ModuleFlags]
+	LDR	R1,[R12,#WS_ModuleFlags]
 
-          TEQ       R0,#1
-          BICNE     R1,R1,#FlagWimp
-          ORREQ     R1,R1,#FlagWimp
+	TEQ	R0,#1
+	BICNE	R1,R1,#FlagWimp
+	ORREQ	R1,R1,#FlagWimp
 
-          STR       R1,[R12,#WS_ModuleFlags]
+	STR	R1,[R12,#WS_ModuleFlags]
 
-          LDMFD     R13!,{R0-R12,PC}
+	LDMFD	R13!,{R0-R12,PC}
 
 ; ======================================================================================================================
 
-.eventv
+EventV
 
 ; Check if the key down event ocurred and, if so, store the code away for future use by the InsV vector code.
 
-          TEQ       R0,#11
-          TEQEQ     R1,#1
-          STREQ     R2,[R12,#WS_LastKey]
+	TEQ	R0,#11
+	TEQEQ	R1,#1
+	STREQ	R2,[R12,#WS_LastKey]
 
-          MOV       PC,R14
+	MOV	PC,R14
 
 ; ======================================================================================================================
 
@@ -1586,4 +1599,3 @@ CompareExit
 	LDMFD	R13!,{R0-R4,PC}
 
 	END
-
