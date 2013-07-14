@@ -152,7 +152,7 @@ TitleString
 	ALIGN
 
 HelpString
-	DCB	"PC Keyboard",9,$BuildVersion," (",$BuildDate,") ",169," Stephen Fryatt, 2003" ;-",$BuildDate:RIGHT:4
+	DCB	"PC Keyboard",9,$BuildVersion," (",$BuildDate,") ",169," Stephen Fryatt, 2003-",$BuildDate:RIGHT:4
 	ALIGN
 
 ; ======================================================================================================================
@@ -1230,8 +1230,8 @@ MisusedStartCommand
 
 TaskCode
 	LDR	R12,[R12]
-	ADD	R13,R12,#&204		;(WS_Size + 4)			; Set the stack up.
-	ADD	R13,R13,#&400		; Ick...
+	ADD	R13,R12,#WS_Size			; Set the stack up.
+	ADD	R13,R13,#4				; Assume that WS_Size is OK for an immediate constant.
 
 ; Check that we aren't in the desktop.
 
