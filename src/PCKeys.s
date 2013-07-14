@@ -33,16 +33,16 @@ XOS_CallEvery				EQU	&02003C
 XOS_Claim				EQU	&02001F
 XOS_Module				EQU	&02001E
 XOS_Release				EQU	&020020
-XOS_RemoveTickerEvent			EQU	&20003D
+XOS_RemoveTickerEvent			EQU	&02003D
 XFilter_DeRegisterPostFilter		EQU	&062643
 XFilter_RegisterPostFilter		EQU	&062641
 XTaskManager_EnumerateTasks		EQU	&062681
 XWimp_CloseDown				EQU	&0600DD
-XWimp_Initialise			EQU	&0400C0
+XWimp_Initialise			EQU	&0600C0
 XWimp_ReadSysInfo			EQU	&0600F2
 
-OS_Exit					EQU	&200011
-OS_GenerateError			EQU	&02002B
+OS_Exit					EQU	&000011
+OS_GenerateError			EQU	&00002B
 
 OS_ReadArgs				EQU	&000049
 OS_Module				EQU	&00001E
@@ -85,7 +85,7 @@ WS_IconBackspace	#	4
 WS_IconEnd		#	4
 WS_IconHome		#	4
 WS_Block		#	WS_BlockSize
-WS_Stack
+WS_Stack		#	WS_TargetSize - @
 
 WS_Size			*	@
 
@@ -914,7 +914,7 @@ InitExit
 
 ; Keys used in application filters
 
-KeyDelete
+Key_Delete
 	DCD	&18B
 
 Key_End
@@ -948,7 +948,7 @@ FinalKillWimptask
 	CMP	R0,#0
 	BLE	FinalFreeTasks
 
-	LDR	R1,task
+	LDR	R1,Task
 	SWI	XWimp_CloseDown
 	MOV	R1,#0
 	STR	R1,[R12,#WS_TaskHandle]
@@ -1143,7 +1143,7 @@ ServiceStartWimp
 
 	LDR	R14,[R12,#WS_TaskHandle]
 	TEQ	R14,#0
-	MOVEQ	R14,#-1
+	MOVEQ	R14,#-1				; This is MOVEQ R14,#NOT-1 in original source?!
 	STREQ	R14,[R12,#WS_TaskHandle]
 	ADREQL	R0,CommandDesktop
 	MOVEQ	R1,#0
@@ -1230,7 +1230,8 @@ MisusedStartCommand
 
 TaskCode
 	LDR	R12,[R12]
-	ADD	R13,R12,#(WS_Size + 4)			; Set the stack up.
+	ADD	R13,R12,#&204		;(WS_Size + 4)			; Set the stack up.
+	ADD	R13,R13,#&400		; Ick...
 
 ; Check that we aren't in the desktop.
 
