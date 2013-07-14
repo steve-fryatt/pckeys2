@@ -92,9 +92,9 @@ WS_Size			*	@
 ; --------------------------------------------------------------------------------------------------------------------
 ; Set up the module flags
 
-FlagIcon		*	&10			; Flag set if the caret is currently in a writable icon.
-FLagWimp		*	&20			; Flag set if we are currently in a Wimp context.
-FlagDoIcon		*	&40			; Flag set if we are supposed to be fiddling wimp icon keys.
+Flag_Icon		EQU	&10			; Flag set if the caret is currently in a writable icon.
+Flag_Wimp		EQU	&20			; Flag set if we are currently in a Wimp context.
+FlagDoIcon		EQU	&40			; Flag set if we are supposed to be fiddling wimp icon keys.
 
 ; --------------------------------------------------------------------------------------------------------------------
 ; Set up application list block
@@ -152,7 +152,7 @@ TitleString
 	ALIGN
 
 HelpString
-	DCB	"PC Keyboard",9,$BuildVersion," (",$BuildDate,") ",169," Stephen Fryatt, 2003-",$BuildDate:RIGHT:4
+	DCB	"PC Keyboard",9,$BuildVersion," (",$BuildDate,") ",169," Stephen Fryatt, 2003" ;-",$BuildDate:RIGHT:4
 	ALIGN
 
 ; ======================================================================================================================
@@ -1044,8 +1044,8 @@ CheckDesktopState
 	LDR	R1,[R12,#WS_ModuleFlags]
 
 	TEQ	R0,#1
-	BICNE	R1,R1,#FlagWimp
-	ORREQ	R1,R1,#FlagWimp
+	BICNE	R1,R1, #Flag_Wimp
+	ORREQ	R1,R1, #Flag_Wimp
 
 	STR	R1,[R12,#WS_ModuleFlags]
 
@@ -1081,8 +1081,8 @@ InsV
 ; in a writable icon at the moment.  If all three are true, carry on to munge the keypress.
 
 	LDR	R2,[R12,#WS_ModuleFlags]
-	AND	R2,R2,#(FlagIcon:OR:FlagWimp:OR:FlagDoIcon)
-	TEQ	R2,#(FlagIcon:OR:FlagWimp:OR:FlagDoIcon)
+	AND	R2,R2,#(Flag_Icon:OR:Flag_Wimp:OR:FlagDoIcon)
+	TEQ	R2,#(Flag_Icon:OR:Flag_Wimp:OR:FlagDoIcon)
 	BNE	InsVExit
 
 ; Do the keypress substitution.  Test the code aginst Delete, Home, End and Backspace to see if it needs changing.
@@ -1143,7 +1143,7 @@ ServiceStartWimp
 
 	LDR	R14,[R12,#WS_TaskHandle]
 	TEQ	R14,#0
-	MOVEQ	R14,#NOT-1
+	MOVEQ	R14,#-1
 	STREQ	R14,[R12,#WS_TaskHandle]
 	ADREQL	R0,CommandDesktop
 	MOVEQ	R1,#0
@@ -1363,8 +1363,8 @@ CheckCaretLocation
 	CMP	R2,#-1
 
 	LDR	R0,[R12,#WS_ModuleFlags]
-	BICEQ	R0,R0,#FlagIcon
-	ORRNE	R0,R0,#FlagIcon
+	BICEQ	R0,R0,#Flag_Icon
+	ORRNE	R0,R0,#Flag_Icon
 	STR	R0,[R12,#WS_ModuleFlags]
 
 	LDMFD	R13!,{R0,R2,PC}
@@ -1597,7 +1597,7 @@ PrintPaddedExit
 Compare
 	STMFD	R13!,{R0-R4,R14}
 
-	MVN	R0,#:NOT:-1
+	MOV	R0,#-1
 	SWI	Territory_UpperCaseTable
 
 ; Load two characters.
