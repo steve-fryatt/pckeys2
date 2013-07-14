@@ -1143,7 +1143,7 @@ ServiceStartWimp
 
 	LDR	R14,[R12,#WS_TaskHandle]
 	TEQ	R14,#0
-	MOVEQ	R14,#-1				; This is MOVEQ R14,#NOT-1 in original source?!
+	MOVEQ	R14,#-1
 	STREQ	R14,[R12,#WS_TaskHandle]
 	ADREQL	R0,CommandDesktop
 	MOVEQ	R1,#0
@@ -1232,13 +1232,6 @@ TaskCode
 	LDR	R12,[R12]
 	ADD	R13,R12,#WS_Size			; Set the stack up.
 	ADD	R13,R13,#4				; Assume that WS_Size is OK for an immediate constant.
-
-; Check that we aren't in the desktop.
-
-	SWI	XWimp_ReadSysInfo			; \TODO -- What if this returns an error?
-	TEQ	R0,#0
-	ADREQ	R0,MisusedStartCommand
-	SWIEQ	OS_GenerateError
 
 ; Kill any previous version of our task which may be running.
 
