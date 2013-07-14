@@ -28,7 +28,36 @@
 
 
 
+XOS_Byte				EQU	&020006
+XOS_CallEvery				EQU	&02003C
+XOS_Claim				EQU	&02001F
 XOS_Module				EQU	&02001E
+XOS_Release				EQU	&020020
+XOS_RemoveTickerEvent			EQU	&20003D
+XFilter_DeRegisterPostFilter		EQU	&062643
+XFilter_RegisterPostFilter		EQU	&062641
+XTaskManager_EnumerateTasks		EQU	&062681
+XWimp_CloseDown				EQU	&0600DD
+XWimp_Initialise			EQU	&0400C0
+XWimp_ReadSysInfo			EQU	&0600F2
+
+OS_Exit					EQU	&200011
+OS_GenerateError			EQU	&02002B
+
+OS_ReadArgs				EQU	&000049
+OS_Module				EQU	&00001E
+OS_PrettyPrint				EQU	&000044
+OS_NewLine				EQU	&000003
+OS_ConvertCardinal4			EQU	&0000D8
+OS_Write0				EQU	&000002
+OS_WriteS				EQU	&000001
+OS_WriteC				EQU	&000000
+OS_ReadUnsigned				EQU	&000021
+OS_ConvertHex4				EQU	&0000D2
+Wimp_ReadSysInfo			EQU	&0400F2
+Wimp_Poll				EQU	&0400C7
+Wimp_GetCaretPosition			EQU	&0400D3
+Terriotry_UpperCaseTable		EQU	&043058
 
 
 ;version$="2.10"
@@ -265,7 +294,7 @@ CommandAddApp
 	ADR	R0,AddAppKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	"OS_ReadArgs"
+	SWI	OS_ReadArgs
 
 ; Check if the application is already listed.  If it is, exit now.
 
@@ -291,7 +320,7 @@ AddAppCountLoop
 AddAppClaimBlock
 	MOV	R0,#6
 	ADD	R3,R3,#AppBlock_Size
-	SWI	"OS_Module"
+	SWI	OS_Module
 
 ; Initialise the details.
 
@@ -325,7 +354,7 @@ AddAppLinkIn
 AddAppFindLoop
 	ADD	R1,R12,WS_Block
 	MOV	R2,#16
-	SWI	"XTaskManager_EnumerateTasks"
+	SWI	XTaskManager_EnumerateTasks
 
 	ADD	R3,R12,WS_Block
 	TEQ	R1,R3
@@ -376,7 +405,7 @@ CommandRemoveApp
 	ADR	R0,RemAppKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	"OS_ReadArgs"
+	SWI	OS_ReadArgs
 
 ; Find the task block if it exists.
 
@@ -429,7 +458,7 @@ RemAppFoundTask
 
 	MOV	R0,#7
 	MOV	R2,R6
-	SWI	"XOS_Module"
+	SWI	XOS_Module
 
 RemAppExit
 	ADD	R13,R13,#64
@@ -457,8 +486,8 @@ CommandListApps
 	MOV	R2,#0
 
 	ADR	R0,DisplayTitles
-	SWI	"OS_PrettyPrint"
-	SWI	"OS_NewLine"
+	SWI	OS_PrettyPrint
+	SWI	OS_NewLine
 
 ; Traverse the app data linked list, printing the application data out as we go.
 
@@ -500,20 +529,20 @@ ListAppsCountExit
 ListAppsPrintFilters
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertCardinal4"
-	SWI	"OS_Write0"
+	SWI	OS_ConvertCardinal4
+	SWI	OS_Write0
 
 	B	ListAppsPrintEOL
 
 ListAppsPrintNoFilters
-	SWI	"OS_WriteS"
+	SWI	OS_WriteS
 	DCB	"None",0
 	ALIGN
 
 ; End off with a new line.
 
 ListAppsPrintEOL
-	SWI	"OS_NewLine"
+	SWI	OS_NewLine
 
 ; Get the next application data block and loop.
 
@@ -523,7 +552,7 @@ ListAppsPrintEOL
 ; Print a final blank line and exit.
 
 ListAppsExit
-	SWI	"OS_NewLine"
+	SWI	OS_NewLine
 
 	LDMFD	R13!,{PC}
 
@@ -565,7 +594,7 @@ ConfigureSet
 	ADR	R0,ConfigureKeywordString
 	MOV	R2,R13
 	MOV	R3,#128
-	SWI	"OS_ReadArgs"
+	SWI	OS_ReadArgs
 
 ; Get the numbers one at a time and
 
@@ -580,7 +609,7 @@ ConfigureDecodeDelete
 	BEQ	ConfigureDecodeEnd
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_KeyDelete]
 
 ConfigureDecodeEnd
@@ -589,7 +618,7 @@ ConfigureDecodeEnd
 	BEQ	ConfigureDecodeHome
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_KeyEnd]
 
 ConfigureDecodeHome
@@ -598,7 +627,7 @@ ConfigureDecodeHome
 	BEQ	ConfigureDecodeIDelete
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_KeyHome]
 
 ConfigureDecodeIDelete
@@ -607,7 +636,7 @@ ConfigureDecodeIDelete
 	BEQ	ConfigureDecodeIBackspace
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_IconDelete]
 
 ConfigureDecodeIBackspace
@@ -616,7 +645,7 @@ ConfigureDecodeIBackspace
 	BEQ	ConfigureDecodeIEnd
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_IconBackspace]
 
 ConfigureDecodeIEnd
@@ -625,7 +654,7 @@ ConfigureDecodeIEnd
 	BEQ	ConfigureDecodeIHome
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_IconEnd]
 
 ConfigureDecodeIHome
@@ -634,7 +663,7 @@ ConfigureDecodeIHome
 	BEQ	ConfigureDecodeIcons
 
 	MOV	R2,#&200
-	SWI	"OS_ReadUnsigned"
+	SWI	OS_ReadUnsigned
 	STR	R2,[R12,#WS_IconHome]
 
 ConfigureDecodeIcons
@@ -665,12 +694,12 @@ ConfigureShow
 ; Display the details for the task filter keys.
 
 	ADRL	R0,ConfigureSectionTasks
-	SWI	"OS_PrettyPrint"
-	SWI	"OS_NewLine"
+	SWI	OS_PrettyPrint
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureTitles
-	SWI	"OS_PrettyPrint"
-	SWI	"OS_NewLine"
+	SWI	OS_PrettyPrint
+	SWI	OS_NewLine
 
 ; Output the details for the individual keys.
 
@@ -681,9 +710,9 @@ ConfigureShow
 	LDR	R0,[R12,#WS_KeyDelete]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureNameEnd
 	MOV	R1,#8
@@ -692,9 +721,9 @@ ConfigureShow
 	LDR	R0,[R12,#WS_KeyEnd]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureNameHome
 	MOV	R1,#8
@@ -703,13 +732,13 @@ ConfigureShow
 	LDR	R0,[R12,#WS_KeyHome]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 ; Output a new line for tidyness.
 
-	SWI	"OS_NewLine"
+	SWI	OS_NewLine
 
 ; Test to see if we are fiddling icon keys, and exit now if we are not.  Otherwise, show the icon keys.
 
@@ -720,12 +749,12 @@ ConfigureShow
 ; Display the details for the writable icon keys.
 
 	ADRL	R0,ConfigureSectionIcons
-	SWI	"OS_PrettyPrint"
-	SWI	"OS_NewLine"
+	SWI	OS_PrettyPrint
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureTitles
-	SWI	"OS_PrettyPrint"
-	SWI	"OS_NewLine"
+	SWI	OS_PrettyPrint
+	SWI	OS_NewLine
 
 ; Output the details for the individual keys.
 
@@ -736,9 +765,9 @@ ConfigureShow
 	LDR	R0,[R12,#WS_IconDelete]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureNameBackspace
 	MOV	R1,#8
@@ -747,9 +776,9 @@ ConfigureShow
 	LDR	R0,[R12,#WS_IconBackspace]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureNameEnd
 	MOV	R1,#8
@@ -758,9 +787,9 @@ ConfigureShow
 	LDR	R0,[R12,#WS_IconEnd]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 	ADRL	R0,ConfigureNameHome
 	MOV	R1,#8
@@ -769,13 +798,13 @@ ConfigureShow
 	LDR	R0,[R12,#WS_IconHome]
 	ADD	R1,R12,WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	"OS_ConvertHex4"
-	SWI	"OS_Write0"
-	SWI	"OS_NewLine"
+	SWI	OS_ConvertHex4
+	SWI	OS_Write0
+	SWI	OS_NewLine
 
 ; Output a new line for tidyness.
 
-	SWI	"OS_NewLine"
+	SWI	OS_NewLine
 
 ConfigureExitShow
 	LDMFD	R13!,{PC}
@@ -818,7 +847,7 @@ ConfigureNameHome
 
 	MOV	R0,#6
 	MOV	R3,#WS_Size
-	SWI	"XOS_Module"
+	SWI	XOS_Module
 	BVS	InitExit
 	STR	R2,[R12]
 	MOV	R12,R2
@@ -854,7 +883,7 @@ ConfigureNameHome
 
 	MOV	R0,#99
 	ADR	R1,CheckDesktopState
-	SWI	"XOS_CallEvery"
+	SWI	XOS_CallEvery
 	BVS	InitExit
 
 ; Claim InsV to trap keypresses.  Pass workspace pointer in R12 (already in R2).
@@ -862,21 +891,21 @@ ConfigureNameHome
 	MOV	R0,#&14 ; InsV
 	ADR	R1,InsV
 	MOV	R2,R12
-	SWI	"XOS_Claim"
+	SWI	XOS_Claim
 	BVS	InitExit
 
 ; Claim EventV to trap keydown.  Pass workspace pointer in R12 (already in R2).
 
 	MOV	R0,#&10 ; EventV
 	ADR	R1,EventV
-	SWI	"XOS_Claim"
+	SWI	XOS_Claim
 	BVS	InitExit
 
 ; Switch on Keypress events.
 
 	MOV	R0,#14
 	MOV	R1,#11
-	SWI	"XOS_Byte"
+	SWI	XOS_Byte
 
 InitExit
 	LDMFD	R13!,{PC}
@@ -920,7 +949,7 @@ FinalKillWimptask
 	BLE	FinalFreeTasks
 
 	LDR	R1,task
-	SWI	"XWimp_CloseDown"
+	SWI	XWimp_CloseDown
 	MOV	R1,#0
 	STR	R1,[R12,#WS_TaskHandle]
 
@@ -938,7 +967,7 @@ FinalFreeTasksLoop          TEQ       R5,#0
 
 	MOV	R2,R5
 	LDR	R5,[R5,#TaskBlock_Next]
-	SWI	"XOS_Module"
+	SWI	XOS_Module
 
 	B	FinalFreeTasksLoop
 
@@ -955,7 +984,7 @@ FinalFreeAppsLoop
 
 	MOV	R2,R6
 	LDR	R6,[R6,#AppBlock_Next]
-	SWI	"XOS_Module"
+	SWI	XOS_Module
 
 	B	FinalFreeAppsLoop
 
@@ -964,27 +993,27 @@ FinalFreeAppsLoop
 FinalRemoveTicker
 	ADR	R0,CheckDesktopState
 	MOV	R1,R12
-	SWI	"XOS_RemoveTickerEvent"
+	SWI	XOS_RemoveTickerEvent
 
 ; Turn off keypress events.
 
 	MOV	R0,#13
 	MOV	R1,#11
-	SWI	"XOS_Byte"
+	SWI	XOS_Byte
 
 ; Release claim to InsV.
 
 	MOV	R0,#&14 ; InsV
 	ADR	R1,InsV
 	MOV	R2,R12
-	SWI	"XOS_Release"
+	SWI	XOS_Release
 
 ; Release claim to EventV.
 
 	MOV	R0,#&10 ; EventV
 	ADR	R1,EventV
 	MOV	R2,R12
-	SWI	"XOS_Release"
+	SWI	XOS_Release
 
 ; Free the RMA workspace
 
@@ -993,7 +1022,7 @@ FinalReleaseWorkspace
 	BEQ	FinalExit
 	MOV	R0,#7
 	MOV	R2,R12
-	SWI	"XOS_Module"
+	SWI	XOS_Module
 
 FinalExit
 	LDMFD	R13!,{PC}
@@ -1010,7 +1039,7 @@ CheckDesktopState
 	STMFD	R13!,{R0-R12,R14}
 
 	MOV	R0,#3
-	SWI	"Wimp_ReadSysInfo"
+	SWI	Wimp_ReadSysInfo
 
 	LDR	R1,[R12,#WS_ModuleFlags]
 
@@ -1205,17 +1234,17 @@ TaskCode
 
 ; Check that we aren't in the desktop.
 
-	SWI	"XWimp_ReadSysInfo"
+	SWI	XWimp_ReadSysInfo			; \TODO -- What if this returns an error?
 	TEQ	R0,#0
 	ADREQ	R0,MisusedStartCommand
-	SWIEQ	"OS_GenerateError"
+	SWIEQ	OS_GenerateError
 
 ; Kill any previous version of our task which may be running.
 
 	LDR	R0,[R12,#WS_TaskHandle]
 	TEQ	R0,#0
 	LDRGT	R1,Task
-	SWIGT	"XWimp_CloseDown"
+	SWIGT	XWimp_CloseDown
 	MOV	R0,#0
 	STRGT	R0,[R12,#WS_TaskHandle]
 
@@ -1229,8 +1258,8 @@ TaskCode
 	LDR	R1,Task
 	ADR	R2,TaskName
 	ADR	R3,WimpMessages
-	SWI	"XWimp_Initialise"
-	SWIVS	"OS_Exit"
+	SWI	XWimp_Initialise
+	SWIVS	OS_Exit
 	STR	R1,[R12,#WS_TaskHandle]
 
 ; Set R1 up to be the block pointer.
@@ -1241,7 +1270,7 @@ TaskCode
 
 PollLoop
 	LDR	R0,PollMask
-	SWI	"Wimp_Poll"
+	SWI	Wimp_Poll
 
 ; Check for and deal with Null polls.
 
@@ -1311,14 +1340,14 @@ PollLoopEnd
 CloseDown
 	LDR	R0,[R12,#WS_TaskHandle]
 	LDR	R1,Task
-	SWI	"XWimp_CloseDown"
+	SWI	XWimp_CloseDown
 
 ; Set the task handle to zero and die.
 
 	MOV	R0,#0
 	STR	R0,[R12,#WS_TaskHandle]
 
-	SWI	"OS_Exit"
+	SWI	OS_Exit
 
 ; ======================================================================================================================
 
@@ -1329,7 +1358,7 @@ CloseDown
 
 	STMFD	R13!,{R0,R2,R14}
 
-	SWI	"Wimp_GetCaretPosition"
+	SWI	Wimp_GetCaretPosition
 	LDR	R2,[R1,#4]
 	CMP	R2,#-1
 
@@ -1436,7 +1465,7 @@ AddFilterRegister
 	ADR	R1,FilterCode
 	MOV	R2,R12
 	LDR	R4,FilterPollMask
-	SWI	"XFilter_RegisterPostFilter"
+	SWI	XFilter_RegisterPostFilter
 
 	BVS	AddFilterExit				; Don't log the details if we failed to register.
 
@@ -1448,7 +1477,7 @@ AddFilterClaimBlock
 
 	MOV	R0,#6
 	MOV	R3,#TaskBlock_Size
-	SWI	"OS_Module"
+	SWI	OS_Module
 
 ; Initialise the details.
 
@@ -1490,7 +1519,7 @@ RemoveFilterDeregister
 	ADR	R1,FilterCode
 	MOV	R2,R12
 	LDR	R4,FilterPollMask
-	SWI	"XFilter_DeRegisterPostFilter"
+	SWI	XFilter_DeRegisterPostFilter
 
 ; Find the task block in the linked list.
 
@@ -1511,7 +1540,7 @@ RemoveFilterFoundItem
 
 	MOV	R0,#7
 	MOV	R2,R5
-	SWI	"XOS_Module"
+	SWI	XOS_Module
 
 RemoveFilterExit
 	LDMFD	R13!,{R0-R6,PC}
@@ -1539,7 +1568,7 @@ PrintPaddedLoop
 	TEQ	R0,#0
 	BEQ	PrintPaddedDoPad
 
-	SWI	"OS_WriteC"
+	SWI	OS_WriteC
 	SUBS	R1,R1,#1
 	BEQ	PrintPaddedExit
 	B	PrintPaddedLoop
@@ -1548,7 +1577,7 @@ PrintPaddedDoPad
 	MOV	R0,#ASC(" ")
 
 PrintPaddedPadLoop
-	SWI	"OS_WriteC"
+	SWI	OS_WriteC
 
 	SUBS	R1,R1,#1
 	BNE	PrintPaddedPadLoop
@@ -1569,7 +1598,7 @@ Compare
 	STMFD	R13!,{R0-R4,R14}
 
 	MVN	R0,#NOT-1
-	SWI	"Territory_UpperCaseTable"
+	SWI	Territory_UpperCaseTable
 
 ; Load two characters.
 
