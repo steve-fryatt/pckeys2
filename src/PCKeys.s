@@ -57,7 +57,7 @@ OS_ConvertHex4				EQU	&0000D2
 Wimp_ReadSysInfo			EQU	&0400F2
 Wimp_Poll				EQU	&0400C7
 Wimp_GetCaretPosition			EQU	&0400D3
-Terriotry_UpperCaseTable		EQU	&043058
+Territory_UpperCaseTable		EQU	&043058
 
 
 ;version$="2.10"
@@ -84,7 +84,7 @@ WS_IconDelete		#	4
 WS_IconBackspace	#	4
 WS_IconEnd		#	4
 WS_IconHome		#	4
-WS_Block		#	BlockSize
+WS_Block		#	WS_BlockSize
 WS_Stack
 
 WS_Size			*	@
@@ -352,11 +352,11 @@ AddAppLinkIn
 	MOV	R0,#0
 
 AddAppFindLoop
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#16
 	SWI	XTaskManager_EnumerateTasks
 
-	ADD	R3,R12,WS_Block
+	ADD	R3,R12,#WS_Block
 	TEQ	R1,R3
 	BEQ	AddAppFindLoopEnd
 
@@ -441,7 +441,7 @@ RemAppTaskSearchNoMatch
 ; Find the app block in the linked list and remove it.
 
 RemAppStartAppSearch
-	ADD	R0,R12,WS_AppList
+	ADD	R0,R12,#WS_AppList
 
 RemAppFindAppLoop
 	LDR       R1,[R0]
@@ -527,7 +527,7 @@ ListAppsCountExit
 	BEQ	ListAppsPrintNoFilters
 
 ListAppsPrintFilters
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertCardinal4
 	SWI	OS_Write0
@@ -708,7 +708,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_KeyDelete]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -719,7 +719,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_KeyEnd]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -730,7 +730,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_KeyHome]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -763,7 +763,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_IconDelete]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -774,7 +774,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_IconBackspace]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -785,7 +785,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_IconEnd]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -796,7 +796,7 @@ ConfigureShow
 	BL	PrintPaddedString
 
 	LDR	R0,[R12,#WS_IconHome]
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
 	SWI	OS_ConvertHex4
 	SWI	OS_Write0
@@ -840,7 +840,7 @@ ConfigureNameHome
 
 ; ======================================================================================================================
 
-.InitCode
+InitCode
 	STMFD     R13!,{R14}
 
 ; Claim our workspace and store the pointer.
@@ -1081,8 +1081,8 @@ InsV
 ; in a writable icon at the moment.  If all three are true, carry on to munge the keypress.
 
 	LDR	R2,[R12,#WS_ModuleFlags]
-	AND	R2,R2,#(FlagIcon OR FlagWimp OR FlagDoIcon)
-	TEQ	R2,#(FlagIcon OR FlagWimp OR FlagDoIcon)
+	AND	R2,R2,#(FlagIcon:OR:FlagWimp:OR:FlagDoIcon)
+	TEQ	R2,#(FlagIcon:OR:FlagWimp:OR:FlagDoIcon)
 	BNE	InsVExit
 
 ; Do the keypress substitution.  Test the code aginst Delete, Home, End and Backspace to see if it needs changing.
@@ -1114,7 +1114,7 @@ InsVTestBackspace
 	TEQ	R2,#&1E
 	LDREQ	R0,[R12,#WS_IconBackspace]
 
-.InsVExit
+InsVExit
 	LDMFD	R13!,{R2,PC}
 
 ; ======================================================================================================================
@@ -1202,7 +1202,7 @@ FilterExit
 ; ======================================================================================================================
 
 Task
-	DCB	TASK"
+	DCB	"TASK"
 
 WimpVersion
 	DCD	310
@@ -1230,7 +1230,7 @@ MisusedStartCommand
 
 TaskCode
 	LDR	R12,[R12]
-	ADD	R13,R12,WS_Size+4			; Set the stack up.
+	ADD	R13,R12,#(WS_Size + 4)			; Set the stack up.
 
 ; Check that we aren't in the desktop.
 
@@ -1264,7 +1264,7 @@ TaskCode
 
 ; Set R1 up to be the block pointer.
 
-	ADD	R1,R12,WS_Block
+	ADD	R1,R12,#WS_Block
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1304,7 +1304,7 @@ PollLoopMessageQuit
 PollLoopMessageTaskInit
 	LDR	R2,WimpMessageTaskInit
 	TEQ	R0,R2
-	BNE	PollLoopMessageTaskInit
+	BNE	PollLoopMessageTaskCloseDown
 
 	ADD	R0,R1,#28
 	BL	FindAppBlock
@@ -1319,7 +1319,7 @@ PollLoopMessageTaskInit
 
 ; Message_TaskCloseDown
 
-PollLoopMessageTaskInit
+PollLoopMessageTaskCloseDown
 	LDR	R2,WimpMessageTaskCloseDown
 	TEQ	R0,R2
 	BNE	PollLoopEnd
@@ -1351,7 +1351,7 @@ CloseDown
 
 ; ======================================================================================================================
 
-.CheckCaretLocation
+CheckCaretLocation
 
 ; Check the position of the caret.  This is called on Null polls, and is used to set the icon flag if the caret is
 ; currently in a Wimp icon as opposed to being 'task controlled'.
@@ -1523,7 +1523,7 @@ RemoveFilterDeregister
 
 ; Find the task block in the linked list.
 
-	ADD	R0,R12,WS_TaskList
+	ADD	R0,R12,#WS_TaskList
 
 RemoveFilterFindLoop
 	LDR	R1,[R0]
@@ -1548,7 +1548,7 @@ RemoveFilterExit
 ; ----------------------------------------------------------------------------------------------------------------------
 
 FilterPollMask
-	DCD	&FFFFFFFF:EOR(1:SHL:8)
+	DCD	&FFFFFFFF:EOR:(1:SHL:8)
 
 ; ======================================================================================================================
 
@@ -1574,7 +1574,7 @@ PrintPaddedLoop
 	B	PrintPaddedLoop
 
 PrintPaddedDoPad
-	MOV	R0,#ASC(" ")
+	MOV	R0,#32	; ASC(" ")
 
 PrintPaddedPadLoop
 	SWI	OS_WriteC
@@ -1597,7 +1597,7 @@ PrintPaddedExit
 Compare
 	STMFD	R13!,{R0-R4,R14}
 
-	MVN	R0,#NOT-1
+	MVN	R0,#:NOT:-1
 	SWI	Territory_UpperCaseTable
 
 ; Load two characters.
