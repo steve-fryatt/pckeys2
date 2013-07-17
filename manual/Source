@@ -10,7 +10,7 @@
 =============================================================================
 PC Keyboard 2 - PC Keyboard Emulation                            Version $$version$$
 
-(C) Stephen Fryatt, 2003                       $$date$$
+(C) Stephen Fryatt, 2003-2013                  $$date$$
 =============================================================================
 </literal>
 
@@ -22,13 +22,17 @@ PC Keyboard 2 - PC Keyboard Emulation                            Version $$versi
 
 <chapter title="License" file="License">
 
-<cite>PC Keyboard</cite> is <strong>Freeware</strong>.  Copyright is held by the author, Stephen Fryatt, 2003.
+<cite>PC Keyboard</cite> is licensed under the EUPL, Version&nbsp;1.1 only (the "Licence"); you may not use this work except in compliance with the Licence.
 
-<cite>PC Keyboard</cite> may be copied freely, so long as it remains unaltered with all its files and documentation intact.
+You may obtain a copy of the Licence at <link ref="#url http://joinup.ec.europa.eu/software/page/eupl">http://joinup.ec.europa.eu/software/page/eupl</link>
 
-If you wish to distribute <cite>PC Keyboard</cite>, please contact me to get my permission. This is so that I can ensure that you have the latest version available. <cite>PC Keyboard</cite> may not be sold, although Public Domain libraries may charge for the cost of discs.
+Unless required by applicable law or agreed to in writing, software distributed under the Licence is distributed on an &quot;<strong>as is</strong>&quot; basis, <strong>without warranties or conditions of any kind</strong>, either express or implied.
 
-No guarantee is made as to the suitability or stability of <cite>PC Keyboard</cite> for any particular purpose.  No liability can be accepted by the author for any problems or damage caused by the use of <cite>PC Keyboard</cite>.
+See the Licence for the specific language governing permissions and limitations under the Licence.
+
+The source for <cite>PC Keyboard</cite> can be found alongside this binary download, at <link ref="#url http://www.stevefryatt.org.uk/software">http://www.stevefryatt.org.uk/software</link>
+
+The necessary libraries and build tools can be found at <link ref="#url http://www.stevefryatt.org.uk/software/build">http://www.stevefryatt.org.uk/software/build</link>
 
 </chapter>
 
@@ -324,6 +328,15 @@ Public Alpha release.
 <list>
 <li>Improved documentation and initial configuration.
 <li>Finally removed 'alpha' tag following two years of no bug reports.
+</list>
+
+<subhead title="2.11 (17 Jul 2013)">
+
+<list>
+<li>Converted source code into Asasm format and restructured build tools.
+<li>Improved SWI error handling.
+<li>Correctly handle user-made *Desktop_PCKeys calls.
+<li>Checked code for ARMv7 compatibility.
 </list>
 
 </chapter>
