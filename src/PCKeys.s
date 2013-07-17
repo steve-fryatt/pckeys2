@@ -45,7 +45,6 @@ XWimp_ReadSysInfo			EQU	&0600F2
 OS_Exit					EQU	&000011
 OS_GenerateError			EQU	&00002B
 
-OS_Module				EQU	&00001E
 OS_PrettyPrint				EQU	&000044
 OS_NewLine				EQU	&000003
 OS_ConvertCardinal4			EQU	&0000D8
@@ -54,7 +53,6 @@ OS_WriteS				EQU	&000001
 OS_WriteC				EQU	&000000
 OS_ReadUnsigned				EQU	&000021
 OS_ConvertHex4				EQU	&0000D2
-Wimp_ReadSysInfo			EQU	&0400F2
 Wimp_Poll				EQU	&0400C7
 Wimp_GetCaretPosition			EQU	&0400D3
 Territory_UpperCaseTable		EQU	&043058
@@ -336,7 +334,8 @@ AddAppCountLoop
 AddAppClaimBlock
 	MOV	R0,#6
 	ADD	R3,R3,#AppBlock_Size
-	SWI	OS_Module
+	SWI	XOS_Module
+	BVS	AddAppExit
 
 ; Initialise the details.
 
@@ -1057,7 +1056,8 @@ CheckDesktopState
 	STMFD	R13!,{R0-R12,R14}
 
 	MOV	R0,#3
-	SWI	Wimp_ReadSysInfo
+	SWI	XWimp_ReadSysInfo
+	LDMVSFD	R13!,{R0-R12,PC}
 
 	LDR	R1,[R12,#WS_ModuleFlags]
 
@@ -1485,7 +1485,8 @@ AddFilterClaimBlock
 
 	MOV	R0,#6
 	MOV	R3,#TaskBlock_Size
-	SWI	OS_Module
+	SWI	XOS_Module
+	BVS	AddFilterExit				; \TODO -- We lose the filter on a memory failure.
 
 ; Initialise the details.
 
