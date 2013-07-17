@@ -267,12 +267,27 @@ CommandConfigureSyntax
 CommandDesktop
 	STMFD	R13!,{R14}
 
+	; Exit with V set if Desktop_PCKeys is used manually.
+
+	LDR	R14,[R12,#WS_TaskHandle]
+	CMN	R14,#1
+	ADRNE	R0,DesktopMisused
+	MSRNE	CPSR_f, #9 << 28
+	LDMNEFD	R13!,{PC}
+
+	; Pass *Desktop_PCKeys to OS_Module.
+
 	MOV	R2,R0
 	ADR	R1,TitleString
 	MOV	R0,#2
 	SWI	XOS_Module
 
 	LDMFD	R13!,{PC}
+
+DesktopMisused
+	DCD	0
+	DCB	"Use *Desktop to start PCKeys.",0
+	ALIGN
 
 ; ======================================================================================================================
 
@@ -1220,10 +1235,6 @@ PollMask
 
 TaskName
 	DCB	"PC Keyboard",0
-
-MisusedStartCommand
-	DCD	0
-	DCB	"Use *Desktop to start PCKeys.",0
 	ALIGN
 
 ; ======================================================================================================================
