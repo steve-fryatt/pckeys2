@@ -46,6 +46,7 @@ XOS_WriteS				EQU	&020001
 XFilter_DeRegisterPostFilter		EQU	&062643
 XFilter_RegisterPostFilter		EQU	&062641
 XTaskManager_EnumerateTasks		EQU	&062681
+XTerritory_UpperCaseTable		EQU	&063058
 XWimp_CloseDown				EQU	&0600DD
 XWimp_GetCaretPosition			EQU	&0600D3
 XWimp_Initialise			EQU	&0600C0
@@ -56,7 +57,6 @@ OS_GenerateError			EQU	&00002B
 
 
 Wimp_Poll				EQU	&0400C7
-Territory_UpperCaseTable		EQU	&043058
 
 
 ;version$="2.10"
@@ -1642,7 +1642,8 @@ Compare
 	STMFD	R13!,{R0-R4,R14}
 
 	MOV	R0,#-1
-	SWI	Territory_UpperCaseTable
+	SWI	XTerritory_UpperCaseTable
+	BVS	CompareExit
 
 ; Load two characters.
 
