@@ -26,8 +26,6 @@
 ;
 ; REM 26/32 bit neutral
 
-
-
 XOS_Byte				EQU	&020006
 XOS_CallEvery				EQU	&02003C
 XOS_Claim				EQU	&02001F
@@ -55,10 +53,6 @@ XWimp_ReadSysInfo			EQU	&0600F2
 
 OS_Exit					EQU	&000011
 OS_GenerateError			EQU	&00002B
-
-;version$="2.10"
-;save_as$="!PCkeys.PCKeys2"
-
 
 ; ---------------------------------------------------------------------------------------------------------------------
 ; Set up the Module Workspace
