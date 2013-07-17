@@ -32,6 +32,7 @@ XOS_Byte				EQU	&020006
 XOS_CallEvery				EQU	&02003C
 XOS_Claim				EQU	&02001F
 XOS_Module				EQU	&02001E
+XOS_ReadArgs				EQU	&020049
 XOS_Release				EQU	&020020
 XOS_RemoveTickerEvent			EQU	&02003D
 XFilter_DeRegisterPostFilter		EQU	&062643
@@ -44,7 +45,6 @@ XWimp_ReadSysInfo			EQU	&0600F2
 OS_Exit					EQU	&000011
 OS_GenerateError			EQU	&00002B
 
-OS_ReadArgs				EQU	&000049
 OS_Module				EQU	&00001E
 OS_PrettyPrint				EQU	&000044
 OS_NewLine				EQU	&000003
@@ -309,7 +309,8 @@ CommandAddApp
 	ADR	R0,AddAppKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	OS_ReadArgs
+	SWI	XOS_ReadArgs
+	BVS	AddAppExit
 
 ; Check if the application is already listed.  If it is, exit now.
 
@@ -420,7 +421,8 @@ CommandRemoveApp
 	ADR	R0,RemAppKeywordString
 	MOV	R2,R13
 	MOV	R3,#64
-	SWI	OS_ReadArgs
+	SWI	XOS_ReadArgs
+	BVS	RemAppExit
 
 ; Find the task block if it exists.
 
@@ -609,7 +611,8 @@ ConfigureSet
 	ADR	R0,ConfigureKeywordString
 	MOV	R2,R13
 	MOV	R3,#128
-	SWI	OS_ReadArgs
+	SWI	XOS_ReadArgs
+	BVS	ConfigureExitSet
 
 ; Get the numbers one at a time and
 
