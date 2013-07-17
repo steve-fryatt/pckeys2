@@ -50,14 +50,11 @@ XTerritory_UpperCaseTable		EQU	&063058
 XWimp_CloseDown				EQU	&0600DD
 XWimp_GetCaretPosition			EQU	&0600D3
 XWimp_Initialise			EQU	&0600C0
+XWimp_Poll				EQU	&0600C7
 XWimp_ReadSysInfo			EQU	&0600F2
 
 OS_Exit					EQU	&000011
 OS_GenerateError			EQU	&00002B
-
-
-Wimp_Poll				EQU	&0400C7
-
 
 ;version$="2.10"
 ;save_as$="!PCkeys.PCKeys2"
@@ -1307,7 +1304,8 @@ TaskCode
 
 PollLoop
 	LDR	R0,PollMask
-	SWI	Wimp_Poll
+	SWI	XWimp_Poll
+	SWIVS	OS_GenerateError
 
 ; Check for and deal with Null polls.
 
