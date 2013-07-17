@@ -31,10 +31,17 @@
 XOS_Byte				EQU	&020006
 XOS_CallEvery				EQU	&02003C
 XOS_Claim				EQU	&02001F
+XOS_ConvertCardinal4			EQU	&0200D8
+XOS_ConvertHex4				EQU	&0200D2
 XOS_Module				EQU	&02001E
+XOS_NewLine				EQU	&020003
+XOS_PrettyPrint				EQU	&020044
 XOS_ReadArgs				EQU	&020049
 XOS_Release				EQU	&020020
 XOS_RemoveTickerEvent			EQU	&02003D
+XOS_Write0				EQU	&020002
+XOS_WriteC				EQU	&020000
+XOS_WriteS				EQU	&020001
 XFilter_DeRegisterPostFilter		EQU	&062643
 XFilter_RegisterPostFilter		EQU	&062641
 XTaskManager_EnumerateTasks		EQU	&062681
@@ -45,14 +52,8 @@ XWimp_ReadSysInfo			EQU	&0600F2
 OS_Exit					EQU	&000011
 OS_GenerateError			EQU	&00002B
 
-OS_PrettyPrint				EQU	&000044
-OS_NewLine				EQU	&000003
-OS_ConvertCardinal4			EQU	&0000D8
-OS_Write0				EQU	&000002
-OS_WriteS				EQU	&000001
-OS_WriteC				EQU	&000000
+
 OS_ReadUnsigned				EQU	&000021
-OS_ConvertHex4				EQU	&0000D2
 Wimp_Poll				EQU	&0400C7
 Wimp_GetCaretPosition			EQU	&0400D3
 Territory_UpperCaseTable		EQU	&043058
@@ -502,8 +503,9 @@ CommandListApps
 	MOV	R2,#0
 
 	ADR	R0,DisplayTitles
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
+	BVS	ListAppsExit
 
 ; Traverse the app data linked list, printing the application data out as we go.
 
@@ -545,20 +547,21 @@ ListAppsCountExit
 ListAppsPrintFilters
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertCardinal4
-	SWI	OS_Write0
+	SWI	XOS_ConvertCardinal4
+	SWIVC	XOS_Write0
 
 	B	ListAppsPrintEOL
 
 ListAppsPrintNoFilters
-	SWI	OS_WriteS
+	SWI	XOS_WriteS
 	DCB	"None",0
 	ALIGN
 
 ; End off with a new line.
 
 ListAppsPrintEOL
-	SWI	OS_NewLine
+	SWIVC	XOS_NewLine
+	BVS	ListAppsExit
 
 ; Get the next application data block and loop.
 
@@ -568,7 +571,7 @@ ListAppsPrintEOL
 ; Print a final blank line and exit.
 
 ListAppsExit
-	SWI	OS_NewLine
+	SWI	XOS_NewLine
 
 	LDMFD	R13!,{PC}
 
@@ -711,51 +714,60 @@ ConfigureShow
 ; Display the details for the task filter keys.
 
 	ADRL	R0,ConfigureSectionTasks
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureTitles
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 ; Output the details for the individual keys.
 
 	ADRL	R0,ConfigureNameDelete
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_KeyDelete]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureNameEnd
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_KeyEnd]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureNameHome
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_KeyHome]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 ; Output a new line for tidyness.
 
-	SWI	OS_NewLine
+	SWI	XOS_NewLine
+	BVS	ConfigureExitShow
 
 ; Test to see if we are fiddling icon keys, and exit now if we are not.  Otherwise, show the icon keys.
 
@@ -766,62 +778,72 @@ ConfigureShow
 ; Display the details for the writable icon keys.
 
 	ADRL	R0,ConfigureSectionIcons
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureTitles
-	SWI	OS_PrettyPrint
-	SWI	OS_NewLine
+	SWI	XOS_PrettyPrint
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 ; Output the details for the individual keys.
 
 	ADRL	R0,ConfigureNameDelete
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_IconDelete]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureNameBackspace
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_IconBackspace]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureNameEnd
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_IconEnd]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 	ADRL	R0,ConfigureNameHome
 	MOV	R1,#8
 	BL	PrintPaddedString
+	BVS	ConfigureExitShow
 
 	LDR	R0,[R12,#WS_IconHome]
 	ADD	R1,R12,#WS_Block
 	MOV	R2,#WS_BlockSize
-	SWI	OS_ConvertHex4
-	SWI	OS_Write0
-	SWI	OS_NewLine
+	SWI	XOS_ConvertHex4
+	SWIVC	XOS_Write0
+	SWIVC	XOS_NewLine
+	BVS	ConfigureExitShow
 
 ; Output a new line for tidyness.
 
-	SWI	OS_NewLine
+	SWI	XOS_NewLine
 
 ConfigureExitShow
 	LDMFD	R13!,{PC}
@@ -1567,6 +1589,8 @@ PrintPaddedString
 ;
 ; R0 => String to print
 ; R1 =  Column width
+;
+;    => V set on error
 
 	STMFD	R13!,{R0-R2,R14}
 
@@ -1577,7 +1601,9 @@ PrintPaddedLoop
 	TEQ	R0,#0
 	BEQ	PrintPaddedDoPad
 
-	SWI	OS_WriteC
+	SWI	XOS_WriteC
+	BVS	PrintPaddedExit
+
 	SUBS	R1,R1,#1
 	BEQ	PrintPaddedExit
 	B	PrintPaddedLoop
@@ -1586,7 +1612,8 @@ PrintPaddedDoPad
 	MOV	R0,#32	; ASC(" ")
 
 PrintPaddedPadLoop
-	SWI	OS_WriteC
+	SWI	XOS_WriteC
+	BVS	PrintPaddedExit
 
 	SUBS	R1,R1,#1
 	BNE	PrintPaddedPadLoop
