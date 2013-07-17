@@ -47,6 +47,7 @@ XFilter_DeRegisterPostFilter		EQU	&062643
 XFilter_RegisterPostFilter		EQU	&062641
 XTaskManager_EnumerateTasks		EQU	&062681
 XWimp_CloseDown				EQU	&0600DD
+XWimp_GetCaretPosition			EQU	&0600D3
 XWimp_Initialise			EQU	&0600C0
 XWimp_ReadSysInfo			EQU	&0600F2
 
@@ -55,7 +56,6 @@ OS_GenerateError			EQU	&00002B
 
 
 Wimp_Poll				EQU	&0400C7
-Wimp_GetCaretPosition			EQU	&0400D3
 Territory_UpperCaseTable		EQU	&043058
 
 
@@ -1395,8 +1395,9 @@ CheckCaretLocation
 
 	STMFD	R13!,{R0,R2,R14}
 
-	SWI	Wimp_GetCaretPosition
-	LDR	R2,[R1,#4]
+	SWI	XWimp_GetCaretPosition
+	LDRVC	R2,[R1,#4]
+	MOVVS	R2,#-1
 	CMP	R2,#-1
 
 	LDR	R0,[R12,#WS_ModuleFlags]
