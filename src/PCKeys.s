@@ -37,6 +37,7 @@ XOS_Module				EQU	&02001E
 XOS_NewLine				EQU	&020003
 XOS_PrettyPrint				EQU	&020044
 XOS_ReadArgs				EQU	&020049
+XOS_ReadUnsigned			EQU	&020021
 XOS_Release				EQU	&020020
 XOS_RemoveTickerEvent			EQU	&02003D
 XOS_Write0				EQU	&020002
@@ -53,7 +54,6 @@ OS_Exit					EQU	&000011
 OS_GenerateError			EQU	&00002B
 
 
-OS_ReadUnsigned				EQU	&000021
 Wimp_Poll				EQU	&0400C7
 Wimp_GetCaretPosition			EQU	&0400D3
 Territory_UpperCaseTable		EQU	&043058
@@ -629,7 +629,8 @@ ConfigureDecodeDelete
 	BEQ	ConfigureDecodeEnd
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_KeyDelete]
 
 ConfigureDecodeEnd
@@ -638,7 +639,8 @@ ConfigureDecodeEnd
 	BEQ	ConfigureDecodeHome
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_KeyEnd]
 
 ConfigureDecodeHome
@@ -647,7 +649,8 @@ ConfigureDecodeHome
 	BEQ	ConfigureDecodeIDelete
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_KeyHome]
 
 ConfigureDecodeIDelete
@@ -656,7 +659,8 @@ ConfigureDecodeIDelete
 	BEQ	ConfigureDecodeIBackspace
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_IconDelete]
 
 ConfigureDecodeIBackspace
@@ -665,7 +669,8 @@ ConfigureDecodeIBackspace
 	BEQ	ConfigureDecodeIEnd
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_IconBackspace]
 
 ConfigureDecodeIEnd
@@ -674,7 +679,8 @@ ConfigureDecodeIEnd
 	BEQ	ConfigureDecodeIHome
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_IconEnd]
 
 ConfigureDecodeIHome
@@ -683,7 +689,8 @@ ConfigureDecodeIHome
 	BEQ	ConfigureDecodeIcons
 
 	MOV	R2,#&200
-	SWI	OS_ReadUnsigned
+	SWI	XOS_ReadUnsigned
+	BVS	ConfigureExitSet
 	STR	R2,[R12,#WS_IconHome]
 
 ConfigureDecodeIcons
