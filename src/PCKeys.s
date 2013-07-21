@@ -26,33 +26,7 @@
 ;
 ; REM 26/32 bit neutral
 
-XOS_Byte				EQU	&020006
-XOS_CallEvery				EQU	&02003C
-XOS_Claim				EQU	&02001F
-XOS_ConvertCardinal4			EQU	&0200D8
-XOS_ConvertHex4				EQU	&0200D2
-XOS_Module				EQU	&02001E
-XOS_NewLine				EQU	&020003
-XOS_PrettyPrint				EQU	&020044
-XOS_ReadArgs				EQU	&020049
-XOS_ReadUnsigned			EQU	&020021
-XOS_Release				EQU	&020020
-XOS_RemoveTickerEvent			EQU	&02003D
-XOS_Write0				EQU	&020002
-XOS_WriteC				EQU	&020000
-XOS_WriteS				EQU	&020001
-XFilter_DeRegisterPostFilter		EQU	&062643
-XFilter_RegisterPostFilter		EQU	&062641
-XTaskManager_EnumerateTasks		EQU	&062681
-XTerritory_UpperCaseTable		EQU	&063058
-XWimp_CloseDown				EQU	&0600DD
-XWimp_GetCaretPosition			EQU	&0600D3
-XWimp_Initialise			EQU	&0600C0
-XWimp_Poll				EQU	&0600C7
-XWimp_ReadSysInfo			EQU	&0600F2
-
-OS_Exit					EQU	&000011
-OS_GenerateError			EQU	&00002B
+	GET	$Include/SWINames
 
 ; ---------------------------------------------------------------------------------------------------------------------
 ; Set up the Module Workspace
