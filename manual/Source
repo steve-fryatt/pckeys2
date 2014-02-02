@@ -12,6 +12,7 @@ PC Keyboard 2 - PC Keyboard Emulation                            Version $$versi
 
 (C) Stephen Fryatt, 2003-2013                  $$date$$
 =============================================================================
+
 </literal>
 
 
@@ -227,11 +228,11 @@ The <command>-ahome &lt;key code&gt;</command> option sets the key to which the 
 Where key codes are used, these are the ones returned by the Wimp from <code>Wimp_Poll</code>.  These are listed in the <cite>Programmers' Reference Manuals</cite> and the StrongHelp manuals.  Some useful ones are:
 
 <list>
-<li>&amp;18B - <key>Copy</key>
-<li>&amp;18C - <key>Left</key>
-<li>&amp;18D - <key>Right</key>
-<li>&amp;18E - <key>Down</key>
-<li>&amp;18F - <key>Up</key>
+<li>&amp;18B &ndash; <key>Copy</key>
+<li>&amp;18C &ndash; <key>Left</key>
+<li>&amp;18D &ndash; <key>Right</key>
+<li>&amp;18E &ndash; <key>Down</key>
+<li>&amp;18F &ndash; <key>Up</key>
 </list>
 
 In each case, change the central "8" to "9" for a shifted key, "A" for a Ctrl key and "B" for a Ctrl-Shift key.  <key>page up</key> and <key>page down</key> are tied in to <key>up</key> and <key>down</key> to ensure the correct default behaviour, so it is not possible to access these keys independently.
@@ -257,9 +258,9 @@ The <command>-ihome &lt;key code&gt;</command> option sets the key to which the 
 Where key codes are used, these are the ones inserted into the keyboard buffer by RISC OS.  Some useful ones are:
 
 <list>
-<li>&amp;8B - <key>Copy</key>
-<li>&amp;AC - <key>Left</key>
-<li>&amp;AD - <key>Right</key>
+<li>&amp;8B &ndash; <key>Copy</key>
+<li>&amp;AC &ndash; <key>Left</key>
+<li>&amp;AD &ndash; <key>Right</key>
 </list>
 
 Finally, the last two parameters turn the writable icon key modification on or off:
@@ -345,7 +346,6 @@ Public Alpha release.
 
 
 <literal mode="Text">
-
 
 Updates and Contacting Me
 -------------------------
