@@ -10,7 +10,7 @@
 =============================================================================
 PC Keyboard 2 - PC Keyboard Emulation                            Version $$version$$
 
-(C) Stephen Fryatt, 2003-2013                  $$date$$
+(C) Stephen Fryatt, 2003-2014                  $$date$$
 =============================================================================
 
 </literal>
@@ -331,7 +331,7 @@ Public Alpha release.
 <li>Finally removed 'alpha' tag following two years of no bug reports.
 </list>
 
-<subhead title="Test Build">
+<subhead title="2.11 (2 Feb 2014)">
 
 <list>
 <li>Converted source code into Asasm format and restructured build tools.
