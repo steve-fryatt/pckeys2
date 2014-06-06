@@ -51,4 +51,5 @@ PCKeysConfigure -nicons
 | Select the applications to filter on
 
 PCKeysAddApp Writer
+PCKeysAddApp Fireworkz
 PCKeysAddApp "Fireworkz 32"
