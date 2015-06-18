@@ -10,7 +10,7 @@
 =============================================================================
 PC Keyboard 2 - PC Keyboard Emulation                            Version $$version$$
 
-(C) Stephen Fryatt, 2003-2014                  $$date$$
+(C) Stephen Fryatt, 2003-2015                  $$date$$
 =============================================================================
 
 </literal>
@@ -338,6 +338,12 @@ Public Alpha release.
 <li>Improved SWI error handling.
 <li>Correctly handle user-made <command>*Desktop_PCKeys</command> calls.
 <li>Checked code for ARMv7 compatibility.
+</list>
+
+<subhead title="Test Build">
+
+<list>
+<li>Use Wimp_PollIdle on a 10cs interval monitor caret position, to reduce load on system.
 </list>
 
 </chapter>

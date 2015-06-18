@@ -1,4 +1,4 @@
-; Copyright 2003-2013, Stephen Fryatt (info@stevefryatt.org.uk)
+; Copyright 2003-2015, Stephen Fryatt (info@stevefryatt.org.uk)
 ;
 ; This file is part of PCKeys 2:
 ;
@@ -1280,6 +1280,8 @@ TaskCode
 ; ----------------------------------------------------------------------------------------------------------------------
 
 PollLoop
+	SWI	OS_ReadMonotonicTime
+	ADD	R2,R0,#10
 	LDR	R0,PollMask
 	SWI	XWimp_Poll
 	SWIVS	OS_GenerateError
