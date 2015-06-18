@@ -38,6 +38,7 @@ WS_TargetSize		*	&600
 WS_ModuleFlags		#	4
 WS_LastKey		#	4
 WS_TaskHandle		#	4
+WS_PollWord		#	4
 WS_Quit			#	4
 WS_AppList		#	4
 WS_TaskList		#	4
@@ -58,7 +59,7 @@ WS_Size			*	@
 
 Flag_Icon		EQU	&10			; Flag set if the caret is currently in a writable icon.
 Flag_Wimp		EQU	&20			; Flag set if we are currently in a Wimp context.
-FlagDoIcon		EQU	&40			; Flag set if we are supposed to be fiddling wimp icon keys.
+Flag_DoIcon		EQU	&40			; Flag set if we are supposed to be fiddling wimp icon keys.
 
 ; --------------------------------------------------------------------------------------------------------------------
 ; Set up application list block
@@ -672,7 +673,7 @@ ConfigureDecodeIcons
 	BEQ	ConfigureDecodeNIcons
 
 	LDR	R2,[R12,#WS_ModuleFlags]
-	ORR	R2,R2,#FlagDoIcon
+	ORR	R2,R2,#Flag_DoIcon
 	STR	R2,[R12,#WS_ModuleFlags]
 
 ConfigureDecodeNIcons
@@ -681,10 +682,24 @@ ConfigureDecodeNIcons
 	BEQ	ConfigureExitSet
 
 	LDR	R2,[R12,#WS_ModuleFlags]
-	BIC	R2,R2,#FlagDoIcon
+	BIC	R2,R2,#Flag_DoIcon
 	STR	R2,[R12,#WS_ModuleFlags]
 
 ConfigureExitSet
+
+	; Set the pollword to force a poll of our Wimp task.
+	; This will turn Null Events back on if necessary.
+	; Turn off Flag_Icon for now, so that if poll events
+	; are off we're not accidentally considered to be in
+	; an icon. This will get set on the next poll.
+
+	MOV	R2,#1
+	STR	R2,[R12,#WS_PollWord]
+
+	LDR	R2,[R12,#WS_ModuleFlags]
+	BIC	R2,R2,#Flag_Icon
+	STR	R2,[R12,#WS_ModuleFlags]
+
 	ADD	R13,R13,#128
 	LDMFD	R13!,{PC}
 
@@ -752,7 +767,7 @@ ConfigureShow
 ; Test to see if we are fiddling icon keys, and exit now if we are not.  Otherwise, show the icon keys.
 
 	LDR	R0,[R12,#WS_ModuleFlags]
-	TST	R0,#FlagDoIcon
+	TST	R0,#Flag_DoIcon
 	BEQ	ConfigureExitShow
 
 ; Display the details for the writable icon keys.
@@ -1101,8 +1116,8 @@ InsV
 ; in a writable icon at the moment.  If all three are true, carry on to munge the keypress.
 
 	LDR	R2,[R12,#WS_ModuleFlags]
-	AND	R2,R2,#(Flag_Icon:OR:Flag_Wimp:OR:FlagDoIcon)
-	TEQ	R2,#(Flag_Icon:OR:Flag_Wimp:OR:FlagDoIcon)
+	AND	R2,R2,#(Flag_Icon:OR:Flag_Wimp:OR:Flag_DoIcon)
+	TEQ	R2,#(Flag_Icon:OR:Flag_Wimp:OR:Flag_DoIcon)
 	BNE	InsVExit
 
 ; Do the keypress substitution.  Test the code aginst Delete, Home, End and Backspace to see if it needs changing.
@@ -1237,7 +1252,7 @@ WimpMessageQuit
 	DCD	0		; Message_Quit
 
 PollMask
-	DCD	&3830
+	DCD	&1830
 
 TaskName
 	DCB	"PC Keyboard",0
@@ -1276,20 +1291,30 @@ TaskCode
 ; Set R1 up to be the block pointer.
 
 	ADD	R1,R12,#WS_Block
+	ADD	R3,R12,#WS_PollWord
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
 PollLoop
 	SWI	OS_ReadMonotonicTime
 	ADD	R2,R0,#10
+
+	MOV	R0,#0
+	STR	R0,[R3]
+
+	LDR	R0,[R12,#WS_ModuleFlags]
+	TST	R0,#Flag_DoIcon
 	LDR	R0,PollMask
+	ORREQ	R0,R0,#1
+
 	SWI	XWimp_Poll
 	SWIVS	OS_GenerateError
 
-; Check for and deal with Null polls.
+; Check for and deal with Null and PollWordNonZero events.
 
-PollLoopEventNull
+PollLoopEventNullNoNZero
 	TEQ	R0,#0
+	TEQNE	R0,#13
 	BNE	PollLoopEventWimpMessage
 
 	BL	CheckCaretLocation
