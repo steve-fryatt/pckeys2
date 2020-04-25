@@ -1307,7 +1307,7 @@ PollLoop
 	LDR	R0,PollMask
 	ORREQ	R0,R0,#1
 
-	SWI	XWimp_Poll
+	SWI	XWimp_PollIdle
 	SWIVS	OS_GenerateError
 
 ; Check for and deal with Null and PollWordNonZero events.
