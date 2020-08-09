@@ -1,4 +1,4 @@
-# Copyright 2013-2016, Stephen Fryatt (info@stevefryatt.org.uk)
+# Copyright 2013-2020, Stephen Fryatt (info@stevefryatt.org.uk)
 #
 # This file is part of PCKeys 2:
 #
@@ -28,6 +28,9 @@ ARCHIVE := pckeys
 
 MODULE := PCKeys2,ffa
 APP := !PCKeys
+
+PACKAGE := PCKeys
+PACKAGELOC := Desktop
 
 OBJS := PCKeys.o
 

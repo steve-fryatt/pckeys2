@@ -1,0 +1,28 @@
+Package: PCKeys
+Version: 2.11-1
+Section: Desktop
+Priority: Optional
+Maintainer: Stephen Fryatt <info@stevefryatt.org.uk>
+Standards-Version: 0.6.0
+Environment: arm
+Licence: Free
+Description: Select Acorn- or PC-usage of the Delete key
+ PC Keyboard is a module to change the use of the Delete, End (Copy) and Home
+ keys in applications under RISC OS. Historically, the Delete key on RISC OS
+ has always duplicated Backspace, which is different from the behaviour on
+ other platforms. On RISC OS 5 this behaviour is changed to the "PC style" and
+ the OS tries to enforce this, but not all applications follow suit.
+ .
+ The module can be used in three ways:
+ .
+ 1. It can be used on RISC OS 5 to convert applications fixed in "Acorn style"
+ operation over to the "PC style" used by the OS.
+ .
+ 2. Alternatively, on RISC OS 5, it can be used to convert the behaviour of
+ writable icons, and any applications which detect the OS and insist on "PC
+ style" operation, back to "Acorn style" usage.
+ .
+ 3. On all other versions of RISC OS, it can be used to convert the behaviour
+ of applications and writable icons to "PC style" operation.
+Homepage: http://www.stevefryatt.org.uk/software/utils/
+Components: Apps.Desktop.!PCKeys (Movable)
