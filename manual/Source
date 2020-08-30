@@ -1,6 +1,6 @@
 <document title="PC Keyboard2">
-<define name="version" value="2.10">
-<define name="date" value="5 August 2007" length=30 align="right">
+<define name="version" value="0.00">
+<define name="date" value="1 January 1900" length=30 align="right">
 
 
 
@@ -10,7 +10,7 @@
 =============================================================================
 PC Keyboard 2 - PC Keyboard Emulation                            Version $$version$$
 
-(C) Stephen Fryatt, 2003-2015                  $$date$$
+(C) Stephen Fryatt, 2003-2020                  $$date$$
 =============================================================================
 
 </literal>
@@ -23,7 +23,7 @@ PC Keyboard 2 - PC Keyboard Emulation                            Version $$versi
 
 <chapter title="Licence" file="Licence">
 
-<cite>PC&nbsp;Keyboard</cite> is licensed under the EUPL, Version&nbsp;1.1 only (the &ldquo;Licence&rdquo;); you may not use this work except in compliance with the Licence.
+<cite>PC&nbsp;Keyboard</cite> is licensed under the EUPL, Version&nbsp;1.2 only (the &ldquo;Licence&rdquo;); you may not use this work except in compliance with the Licence.
 
 You may obtain a copy of the Licence at <link ref="#url http://joinup.ec.europa.eu/software/page/eupl">http://joinup.ec.europa.eu/software/page/eupl</link>
 
