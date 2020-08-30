@@ -230,7 +230,7 @@ CommandConfigureSyntax
 ; The code for *Desktop_PCKeys
 
 CommandDesktop
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 
 	; Exit with V set if Desktop_PCKeys is used manually.
 
@@ -242,10 +242,10 @@ CommandDesktopError
 	ADR	R0,DesktopMisused
 	TEQ	R0,R0
 	TEQ	PC,PC
-	LDMNEFD	R13!,{R14}
+	POPNE	{R14}
 	ORRNES	PC,R14,#9 << 28
 	MSR	CPSR_f, #9 << 28
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 	; Pass *Desktop_PCKeys to OS_Module.
 
@@ -255,7 +255,7 @@ CommandDesktopOK
 	MOV	R0,#2
 	SWI	XOS_Module
 
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 DesktopMisused
 	DCD	0
@@ -269,7 +269,7 @@ DesktopMisused
 ; Entered with one parameter (the application name).
 
 CommandAddApp
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Claim 64 bytes of workspace from the stack.
@@ -356,10 +356,10 @@ AddAppFindLoop
 	BL	Compare
 	BNE	AddAppFindLoopEnd
 
-	STMFD	R13!,{R0}
+	PUSH	{R0}
 	LDR	R0,[R12,#WS_Block]
 	BL	AddFilter
-	LDMFD	R13!,{R0}
+	POP	{R0}
 
 AddAppFindLoopEnd
 	CMP	R0,#0
@@ -367,7 +367,7 @@ AddAppFindLoopEnd
 
 AddAppExit
 	ADD	R13,R13,#64
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -382,7 +382,7 @@ AddAppKeywordString
 ; Entered with one paramener (the application name).
 
 CommandRemoveApp
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Claim 64 bytes of workspace from the stack.
@@ -453,7 +453,7 @@ RemAppFoundTask
 
 RemAppExit
 	ADD	R13,R13,#64
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -468,7 +468,7 @@ RemAppKeywordString
 ; Entered with no parameters.
 
 CommandListApps
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Write out the column headings.
@@ -547,7 +547,7 @@ ListAppsPrintEOL
 ListAppsExit
 	SWI	XOS_NewLine
 
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -567,7 +567,7 @@ DisplayTitles
 ; Entered with various parameters.
 
 CommandConfigure
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ; Check if there were any parameters; if not, show the current configuration, decode them.
@@ -701,7 +701,7 @@ ConfigureExitSet
 	STR	R2,[R12,#WS_ModuleFlags]
 
 	ADD	R13,R13,#128
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 
 ConfigureShow
@@ -841,7 +841,7 @@ ConfigureShow
 	SWI	XOS_NewLine
 
 ConfigureExitShow
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 
 ; ----------------------------------------------------------------------------------------------------------------------
@@ -875,7 +875,7 @@ ConfigureNameHome
 ; ======================================================================================================================
 
 InitCode
-	STMFD     R13!,{R14}
+	PUSH	{R14}
 
 ; Claim our workspace and store the pointer.
 
@@ -942,7 +942,7 @@ InitCode
 	SWI	XOS_Byte
 
 InitExit
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -974,7 +974,7 @@ Icon_Home
 ; ----------------------------------------------------------------------------------------------------------------------
 
 FinalCode
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 FinalKillWimptask
@@ -1059,7 +1059,7 @@ FinalReleaseWorkspace
 	SWI	XOS_Module
 
 FinalExit
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ======================================================================================================================
 
@@ -1070,7 +1070,7 @@ CheckDesktopState
 ; This code probably shouldn't be called under interrupt, but it worked OK in PCKeys1 (apparently) without problem
 ; and there isn't an obvious way to do it otherwise...
 
-	STMFD	R13!,{R0-R12,R14}
+	PUSH	{R0-R12,R14}
 
 	MOV	R0,#3
 	SWI	XWimp_ReadSysInfo
@@ -1084,7 +1084,7 @@ CheckDesktopState
 
 	STR	R1,[R12,#WS_ModuleFlags]
 
-	LDMFD	R13!,{R0-R12,PC}
+	POP	{R0-R12,PC}
 
 ; ======================================================================================================================
 
@@ -1110,7 +1110,7 @@ InsV
 	TEQ	R1,#0
 	MOVNE	PC,R14
 
-	STMFD	R13!,{R2,R14}
+	PUSH	{R2,R14}
 
 ; Check that we aresupposed to be fiddling icon keypresses, that we are in a desktop context and that the caret is
 ; in a writable icon at the moment.  If all three are true, carry on to munge the keypress.
@@ -1150,7 +1150,7 @@ InsVTestBackspace
 	LDREQ	R0,[R12,#WS_IconBackspace]
 
 InsVExit
-	LDMFD	R13!,{R2,PC}
+	POP	{R2,PC}
 
 ; ======================================================================================================================
 
@@ -1161,7 +1161,7 @@ ServiceCode
 
 	MOVNE	PC,R14
 
-	STMFD	R13!,{R14}
+	PUSH	{R14}
 	LDR	R12,[R12]
 
 ServiceReset
@@ -1170,7 +1170,7 @@ ServiceReset
 
 	MOV	R14,#0
 	STR	R14,[R12,#WS_TaskHandle]
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ServiceStartWimp
 	TEQ	R1,#46
@@ -1182,19 +1182,19 @@ ServiceStartWimp
 	STREQ	R14,[R12,#WS_TaskHandle]
 	ADREQL	R0,CommandDesktop
 	MOVEQ	R1,#0
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ServiceStartedWimp
 	LDR	R14,[R12,#WS_TaskHandle]
 	CMN	R14,#1
 	MOVEQ	R14,#0
 	STREQ	R14,[R12,#WS_TaskHandle]
-	LDMFD	R13!,{PC}
+	POP	{PC}
 
 ; ======================================================================================================================
 
 FilterCode
-	STMFD	R13!, {R0-R5,R14}
+	PUSH	{R0-R5,R14}
 
 ; Get the key-code from the poll block, then test it against Delete, End and Home keys to see if it needs changing.
 
@@ -1228,7 +1228,7 @@ FilterTestHome
 	STR	R0,[R1,#24]
 
 FilterExit
-	LDMFD	R13!,{R0-R5,R14}
+	POP	{R0-R5,R14}
 	TEQ	R0,R0
 	TEQ	PC,PC
 	MOVNES	PC,R14
@@ -1395,7 +1395,7 @@ CheckCaretLocation
 ; Check the position of the caret.  This is called on Null polls, and is used to set the icon flag if the caret is
 ; currently in a Wimp icon as opposed to being 'task controlled'.
 
-	STMFD	R13!,{R0,R2,R14}
+	PUSH	{R0,R2,R14}
 
 	SWI	XWimp_GetCaretPosition
 	LDRVC	R2,[R1,#4]
@@ -1407,7 +1407,7 @@ CheckCaretLocation
 	ORRNE	R0,R0,#Flag_Icon
 	STR	R0,[R12,#WS_ModuleFlags]
 
-	LDMFD	R13!,{R0,R2,PC}
+	POP	{R0,R2,PC}
 
 ; ======================================================================================================================
 
@@ -1420,7 +1420,7 @@ FindAppBlock
 ;
 ; R6  <= block (zero if not found)
 
-	STMFD	R13!,{R0-R5,R14}
+	PUSH	{R0-R5,R14}
 
 ; Set R4 up ready for the compare subroutine.  R6 points to the first block of application data.
 
@@ -1446,7 +1446,7 @@ FindAppLoop
 	B	FindAppLoop
 
 FindAppExit
-	LDMFD	R13!,{R0-R5,PC}
+	POP	{R0-R5,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1459,7 +1459,7 @@ FindTaskBlock
 ;
 ; R5  <= block (zero if not found)
 
-	STMFD	R13!,{R0-R4,R14}
+	PUSH	{R0-R4,R14}
 
 ; R5 points to the first block of task data.
 
@@ -1483,7 +1483,7 @@ FindTaskLoop
 	B	FindTaskLoop
 
 FindTaskExit
-	LDMFD	R13!,{R0-R4,PC}
+	POP	{R0-R4,PC}
 
 ; ======================================================================================================================
 
@@ -1495,7 +1495,7 @@ AddFilter
 ; R6  => Application block
 ; R12 => Workspace
 
-	STMFD	R13!,{R0-R6,R14}
+	PUSH	{R0-R6,R14}
 
 ; Register the filter, using the default values.
 
@@ -1537,7 +1537,7 @@ AddFilterLinkIn
 	STR	R2,[R12,#WS_TaskList]
 
 AddFilterExit
-	LDMFD	R13!,{R0-R6,PC}
+	POP	{R0-R6,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1548,7 +1548,7 @@ RemoveFilter
 ; R5  => Task block
 ; R12 => Workspace
 
-	STMFD	R13!,{R0-R6,R14}
+	PUSH	{R0-R6,R14}
 
 RemoveFilterTest
 	LDR	R3,[R5,#TaskBlock_TaskHandle]
@@ -1584,7 +1584,7 @@ RemoveFilterFoundItem
 	SWI	XOS_Module
 
 RemoveFilterExit
-	LDMFD	R13!,{R0-R6,PC}
+	POP	{R0-R6,PC}
 
 ; ----------------------------------------------------------------------------------------------------------------------
 
@@ -1602,7 +1602,7 @@ PrintPaddedString
 ;
 ;    => V set on error
 
-	STMFD	R13!,{R0-R2,R14}
+	PUSH	{R0-R2,R14}
 
 	MOV	R2,R0
 
@@ -1629,7 +1629,7 @@ PrintPaddedPadLoop
 	BNE	PrintPaddedPadLoop
 
 PrintPaddedExit
-	LDMFD	R13!,{R0-R2,PC}
+	POP	{R0-R2,PC}
 
 ; ======================================================================================================================
 
@@ -1641,7 +1641,7 @@ PrintPaddedExit
 ; Returns Z flag (EQ/NE).
 
 Compare
-	STMFD	R13!,{R0-R4,R14}
+	PUSH	{R0-R4,R14}
 
 	MOV	R0,#-1
 	SWI	XTerritory_UpperCaseTable
@@ -1672,6 +1672,6 @@ CompareLoop
 	BNE	CompareLoop
 
 CompareExit
-	LDMFD	R13!,{R0-R4,PC}
+	POP	{R0-R4,PC}
 
 	END
