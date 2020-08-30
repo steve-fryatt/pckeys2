@@ -340,9 +340,10 @@ Public Alpha release.
 <li>Checked code for ARMv7 compatibility.
 </list>
 
-<subhead title="Test Build">
+<subhead title="2.12 (30 Aug 2020)">
 
 <list>
+<li>Licence updated to EUPL&nbsp;v1.2.
 <li>Use Wimp_PollIdle on a 10cs interval monitor caret position, to reduce load on system.
 <li>Disable Null Events when modification of icon keypresses is configured off, to reduce the system load.
 </list>
