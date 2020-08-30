@@ -52,4 +52,5 @@ PCKeysConfigure -nicons
 
 PCKeysAddApp Writer
 PCKeysAddApp Fireworkz
-PCKeysAddApp "Fireworkzï¿½32"
+PCKeysAddApp "Fireworkz 32"
+PCKeysAddApp Ovation
